@@ -22,6 +22,11 @@ C# Attributes that allow you to quickly assign Unity assets from a Dropdown on t
 - For **ScriptableObjects**:
   - Quickly create new instances of `ScriptableObject` and add them into the specified location from a `+` button. When creating a new asset this way, the enclosing Folder / ScriptableGroup are also **created automatically** if they didn't exist.
 
+## **Installation**
+There are 2 ways:
+  - A) Download source code and put them into the Unity's Assets folder
+  - B) Install from the **Package Manager** using this git URL: https://github.com/phanphantz/Unity-Quick-Dropdown.git
+ 
 # Quick Example
 
 ```csharp
