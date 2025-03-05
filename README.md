@@ -49,6 +49,8 @@ public class QuickDropdownExample : MonoBehaviour
     GameObject prefab;
 }
 ```
+### Result:
+<img src=https://github.com/phanphantz/GameDevSecretSauce/blob/main/Assets/QuickDropdown/QuickDropdownExample_1.jpeg width=80%>
 
 # Future Plans
 - **[FromAddressable]** attribute.
