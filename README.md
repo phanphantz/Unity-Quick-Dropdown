@@ -5,7 +5,7 @@ C# Attributes that allow you to quickly assign Unity assets from a Dropdown on t
 <img src=https://github.com/phanphantz/GameDevSecretSauce/blob/main/Assets/QuickDropdown/QuickDropdownExample_GIF.gif width=100%>
 
 > [!NOTE]
-> This Library is not associated with Unity.
+> This Library is not an Official Library from Unity.
 
 # Overview
 
