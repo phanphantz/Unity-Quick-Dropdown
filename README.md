@@ -47,7 +47,7 @@ public class QuickDropdownExample : MonoBehaviour
     public float attack;
     public float stamina;
 
-    //Let user pick Sprite from the folder 'Assets/Sprite' and all the subfolders below.
+    //Let user pick Sprite from the folder 'Assets/Sprites' and all the subfolders below.
     //The folder information is hidden from 'isHideInfo' flag
     [FromFolder("Sprites", isHideInfo: true), SerializeField]
     Sprite sprite;
