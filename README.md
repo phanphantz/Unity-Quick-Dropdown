@@ -1,4 +1,4 @@
-# Unity Quick Dropdown
+# ⚡Unity Quick Dropdown
 
 C# Attributes that allow you to quickly assign Unity assets from a Dropdown on the Inspector. Support any `UnityEngine.Object` types. Help save time and reduce human errors by letting you pick an object from your desired location.
 
