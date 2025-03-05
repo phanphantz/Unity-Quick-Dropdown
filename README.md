@@ -19,6 +19,8 @@ C# Attributes that allow you to quickly assign Unity assets from a Dropdown on t
   - Warn about invalid locations.
   - Supports nested dropdown.
   - Easily customize how the Dropdown look using attribute parameters.
+  - Supports Multi-Edit
+  - Undo-Friendly
 - For **ScriptableObjects**:
   - Quickly create new instances of `ScriptableObject` and add them into the specified location from a `+` button. When creating a new asset this way, the enclosing Folder / ScriptableGroup are also **created automatically** if they didn't exist.
 
