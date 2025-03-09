@@ -29,6 +29,7 @@ namespace PhEngine.QuickDropdown
             return elementList
                 .SelectMany(so=>
                 {
+                    //TODO: Should only allow this for ScriptableGroup and should implement cyclic reference prevention 
                     if (so is ScriptableContainer nestedGroup)
                         return nestedGroup.GetStringOptions(type, prefix + nestedGroup.name + "/").ToArray();
                     
