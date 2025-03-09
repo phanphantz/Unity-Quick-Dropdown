@@ -16,6 +16,11 @@ namespace PhEngine.QuickDropdown.Editor
             Field = field;
             Type = type;
         }
+
+        public bool IsTypeSupported(Type type)
+        {
+            return type.IsSubclassOf(typeof(Object));
+        }
         
         public abstract string[] SearchForItems();
         public abstract Object GetResultAtIndex(int index);

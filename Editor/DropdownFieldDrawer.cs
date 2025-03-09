@@ -10,6 +10,7 @@ namespace PhEngine.QuickDropdown.Editor
     public class DropdownFieldDrawer : PropertyDrawer
     {
         static Color linkColor = new Color(0, 0.6f, 0.8f);
+        static Color errorColor = new Color(0.9f, 0.3f,0);
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
@@ -40,6 +41,12 @@ namespace PhEngine.QuickDropdown.Editor
                 type = typeof(GameObject);
 
             var finder = CreateFinder(field, type);
+            if (!finder.IsTypeSupported(type))
+            {
+                DrawFallbackField("This type is not supported by the attribute " + field.GetType().Name);
+                return;
+            }
+            
             var isSourceValid = finder.IsSourceValid();
             if (!isSourceValid)
             {
@@ -150,7 +157,7 @@ namespace PhEngine.QuickDropdown.Editor
             void DrawFallbackField(string reason)
             {
                 var oldColor = GUI.color;
-                GUI.color = Color.red;
+                GUI.color = errorColor;
                 if (field is {IsHideInfo: false})
                 {
                     var rect = position;
