@@ -32,11 +32,15 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override void CreateNewScriptableObject()
         {
+            Undo.IncrementCurrentGroup();
+            var undoId = Undo.GetCurrentGroup();
             CreateSourceIfNotExists();
             var groupPath = QuickDropdownEditorUtils.GetAssetPath(group);
             var newInstance = QuickDropdownEditorUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
+            Undo.RegisterCompleteObjectUndo(group, "Create new ScriptableObject");
             group.Add(newInstance);
             EditorUtility.SetDirty(group);
+            Undo.CollapseUndoOperations(undoId);
         }
 
         public override Texture GetSourceIcon()

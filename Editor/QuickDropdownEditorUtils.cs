@@ -74,16 +74,19 @@ namespace PhEngine.QuickDropdown.Editor
 
         public static ScriptableGroup FindGroup(string name)
         {
-            if (cachedGroups.TryGetValue(name, out var result))
+            if (cachedGroups.TryGetValue(name, out var result) && result != null)
                 return result;
             
             result = AssetDatabase
                 .FindAssets("t:" + nameof(ScriptableGroup) + " " + name)
                 .Select(guid => AssetDatabase.LoadAssetAtPath<ScriptableGroup>(AssetDatabase.GUIDToAssetPath(guid)))
                 .FirstOrDefault(g => g);
-            
+
             if (result)
-                cachedGroups.Add(name, result);
+            {
+                if (!cachedGroups.TryAdd(name, result))
+                    cachedGroups[name] = result;
+            }
             
             return result;
         }
@@ -104,6 +107,7 @@ namespace PhEngine.QuickDropdown.Editor
             AssetDatabase.Refresh();
                 
             var loadedInstance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
+            Undo.RegisterCreatedObjectUndo(loadedInstance, "Create ScriptableObject");
             return loadedInstance;
         }
 
@@ -132,7 +136,7 @@ namespace PhEngine.QuickDropdown.Editor
             if (existingGroup)
                 return existingGroup;
 
-            var groupPath = $"Assets/Resources/SOQuick/{groupName}.asset";
+            var groupPath = $"Assets/Resources/QuickDropdown/{groupName}.asset";
             var directory = Path.GetDirectoryName(groupPath);
             if (string.IsNullOrEmpty(directory))
                 throw new InvalidOperationException("Directory path is empty.");
