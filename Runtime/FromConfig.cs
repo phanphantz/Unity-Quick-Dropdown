@@ -1,7 +1,23 @@
-﻿namespace PhEngine.QuickDropdown
+﻿using System;
+
+namespace PhEngine.QuickDropdown
 {
-    public class FromConfig
+    public class FromConfig : DropdownField
     {
-        
+        public Type ConfigType { get; }
+        public FromConfig(Type configType, InspectMode inspectMode = InspectMode.OpenPropertyWindow, string defaultNewItemName = null, bool isHideInspectButton = false, bool isHideInfo = false, bool isHideCreateSOButton = false) : base(configType.FullName, inspectMode, defaultNewItemName, isHideInspectButton, isHideInfo, isHideCreateSOButton)
+        {
+            ConfigType = configType;
+        }
+
+        public override bool CheckInvalid(out Exception exception)
+        {
+            exception = null;
+            if (ConfigType.IsSubclassOf(typeof(ScriptableContainer))) 
+                return base.CheckInvalid(out exception);
+            
+            exception = new Exception("The type must be a subclass of ScriptableGroup.");
+            return true;
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace PhEngine.QuickDropdown
@@ -19,6 +20,16 @@ namespace PhEngine.QuickDropdown
             IsHideInspectButton = isHideInspectButton;
             IsHideInfo = isHideInfo;
             IsHideCreateSOButton = isHideCreateSOButton;
+        }
+
+        public virtual bool CheckInvalid(out Exception exception)
+        {
+            exception = null;
+            if (!string.IsNullOrEmpty(Path)) 
+                return false;
+            
+            exception = new Exception("Path is null or empty.");
+            return true;
         }
     }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -61,9 +60,6 @@ namespace PhEngine.QuickDropdown.Editor
         static Texture unsafePrefabIcon;
         static Texture unsafeObjectIcon;
         
-        static Dictionary<string, ScriptableGroup> cachedGroups = new Dictionary<string, ScriptableGroup>();
-        static Dictionary<string, ScriptableGroup> cachedConfigGroups = new Dictionary<string, ScriptableGroup>();
-        
         public static AssetFileResult[] FindInFolder(string typeName, string folderPath)
         {
             if (!Directory.Exists(folderPath))
@@ -72,48 +68,6 @@ namespace PhEngine.QuickDropdown.Editor
             return AssetDatabase.FindAssets("t:" + typeName, new []{ folderPath })
                 .Select(guid => new AssetFileResult(AssetDatabase.GUIDToAssetPath(guid)))
                 .ToArray();
-        }
-
-        public static ScriptableGroup FindGroup(string name)
-        {
-            if (cachedGroups.TryGetValue(name, out var result) && result != null)
-                return result;
-            
-            result = AssetDatabase
-                .FindAssets("t:" + nameof(ScriptableGroup) + " " + name)
-                .Select(guid => AssetDatabase.LoadAssetAtPath<ScriptableGroup>(AssetDatabase.GUIDToAssetPath(guid)))
-                .FirstOrDefault(g => g);
-
-            if (result)
-            {
-                if (!cachedGroups.TryAdd(name, result))
-                    cachedGroups[name] = result;
-            }
-            
-            return result;
-        }
-        
-        public static ScriptableGroup FindConfigGroupOfType(string typeName)
-        {
-            if (cachedConfigGroups.TryGetValue(typeName, out var result) && result != null)
-                return result;
-
-            var possibleItems = AssetDatabase
-                .FindAssets("t:" + typeName)
-                .Select(guid => AssetDatabase.LoadAssetAtPath<ScriptableGroup>(AssetDatabase.GUIDToAssetPath(guid)))
-                .ToArray();
-
-            if (possibleItems.Length > 1)
-                Debug.LogWarning("There are more than one Config Group of type: " + typeName + " in the project. Please make sure there are only one Config Group.");
-            
-            result = possibleItems.FirstOrDefault(g => g);
-            if (result)
-            {
-                if (!cachedConfigGroups.TryAdd(typeName, result))
-                    cachedConfigGroups[typeName] = result;
-            }
-            
-            return result;
         }
         
         public static ScriptableObject CreateScriptableObjectAndSelect(string name, Type type, string folderPath)
@@ -125,7 +79,7 @@ namespace PhEngine.QuickDropdown.Editor
             return loadedInstance;
         }
 
-        static ScriptableObject CreateScriptableObject(Type type, string assetPath)
+        public static ScriptableObject CreateScriptableObject(Type type, string assetPath)
         {
             AssetDatabase.CreateAsset(ScriptableObject.CreateInstance(type), assetPath);
             AssetDatabase.SaveAssets();
@@ -153,23 +107,6 @@ namespace PhEngine.QuickDropdown.Editor
             EditorUtility.FocusProjectWindow();
             Selection.activeObject = obj;
             EditorGUIUtility.PingObject(obj);
-        }
-
-        public static ScriptableGroup PrepareGroup(string groupName)
-        {
-            var existingGroup = FindGroup(groupName);
-            if (existingGroup)
-                return existingGroup;
-
-            var groupPath = $"Assets/Resources/QuickDropdown/{groupName}.asset";
-            var directory = Path.GetDirectoryName(groupPath);
-            if (string.IsNullOrEmpty(directory))
-                throw new InvalidOperationException("Directory path is empty.");
-                
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-
-            return CreateScriptableObject(typeof(ScriptableGroup), groupPath) as ScriptableGroup;
         }
 
         public static Texture GetIconForType(Type type)

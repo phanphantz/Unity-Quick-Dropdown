@@ -28,14 +28,14 @@ namespace PhEngine.QuickDropdown.Editor
                 DrawFallbackField("Attribute is invalid");
                 return;
             }
-
-            var path = field.Path;
-            if (string.IsNullOrEmpty(path))
+            
+            if (field.CheckInvalid(out var error))
             {
-                DrawFallbackField("Path is null or empty");
+                DrawFallbackField(error.Message);
                 return;
             }
 
+            var path = field.Path;
             var type = GetFieldType(property);
             if (type.IsSubclassOf(typeof(MonoBehaviour)))
                 type = typeof(GameObject);
@@ -47,7 +47,7 @@ namespace PhEngine.QuickDropdown.Editor
                 return;
             }
             
-            var isSourceValid = finder.IsSourceValid();
+            var isSourceValid = finder.CheckSource();
             if (!isSourceValid)
             {
                 var rect = position;
@@ -203,13 +203,13 @@ namespace PhEngine.QuickDropdown.Editor
 
         static ObjectFinder CreateFinder(DropdownField field, Type type)
         {
-            if (field is FromFolder)
-                return new FolderObjectFinder(field, type);
-
-            if (field is FromGroup)
-                return new ScriptableGroupFinder(field, type);
-
-            throw new NotImplementedException($"Don't know how to get finder for {type}");
+            return field switch
+            {
+                FromConfig => new ConfigFinder(field, type),
+                FromFolder => new FolderObjectFinder(field, type),
+                FromGroup => new ScriptableGroupFinder(field, type),
+                _ => throw new NotImplementedException($"Don't know how to get finder for {type}")
+            };
         }
     }
 }

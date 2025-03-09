@@ -1,72 +1,39 @@
-using System;
-using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
-using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace PhEngine.QuickDropdown.Editor
 {
-    public class ScriptableGroupFinder : ObjectFinder
+    public class ScriptableGroupFinder : ScriptableContainerFinder
     {
-        ScriptableGroup group;
-
+        static Dictionary<string, ScriptableGroup> cachedGroups = new Dictionary<string, ScriptableGroup>();
         public ScriptableGroupFinder(DropdownField field, Type type) : base(field, type)
         {
         }
-        
-        public override string[] SearchForItems()
+
+        public override ScriptableContainer FindContainer(string name)
         {
-            group = FindMyGroup();
-            return group ? group.GetStringOptions(Type) : new string[] { };
+            if (cachedGroups.TryGetValue(name, out var result) && result != null)
+                return result;
+            
+            result = AssetDatabase
+                .FindAssets("t:" + nameof(ScriptableGroup) + " " + name)
+                .Select(guid => AssetDatabase.LoadAssetAtPath<ScriptableGroup>(AssetDatabase.GUIDToAssetPath(guid)))
+                .FirstOrDefault(g => g);
+
+            if (result)
+            {
+                if (!cachedGroups.TryAdd(name, result))
+                    cachedGroups[name] = result;
+            }
+            
+            return result;
         }
 
-        protected virtual ScriptableGroup FindMyGroup()
+        protected override ScriptableContainer CreateNewContainer(string groupPath)
         {
-            return QuickDropdownEditorUtils.FindGroup(ObjectPath);
-        }
-
-        public override Object GetResultAtIndex(int index)
-        {
-            return group.GetElementFromFlatTree(Type, index);
-        }
-        
-        public override void SelectAndPingSource()
-        {
-            QuickDropdownEditorUtils.SelectAndPing(group);
-        }
-
-        public override void CreateNewScriptableObject()
-        {
-            Undo.IncrementCurrentGroup();
-            var undoId = Undo.GetCurrentGroup();
-            CreateSourceIfNotExists();
-            var groupPath = QuickDropdownEditorUtils.GetAssetPath(group);
-            var newInstance = QuickDropdownEditorUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
-            Undo.RegisterCompleteObjectUndo(group, "Create new ScriptableObject");
-            group.Add(newInstance);
-            EditorUtility.SetDirty(group);
-            Undo.CollapseUndoOperations(undoId);
-        }
-
-        public override Texture GetSourceIcon()
-        {
-            return QuickDropdownEditorUtils.GetScriptableObjectIcon();
-        }
-
-        public override bool IsBelongToSource(Object currentObject)
-        {
-            return group.Contains(currentObject);
-        }
-
-        public override bool IsSourceValid()
-        {
-            return FindMyGroup();
-        }
-
-        public override void CreateSourceIfNotExists()
-        {
-            if (!group)
-                group = QuickDropdownEditorUtils.PrepareGroup(ObjectPath);
+            return QuickDropdownEditorUtils.CreateScriptableObject(typeof(ScriptableGroup), groupPath) as ScriptableGroup;
         }
     }
 }

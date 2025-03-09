@@ -9,6 +9,9 @@ public class QuickDropdownExample : MonoBehaviour
     //By default, This also display Inspect button, Create button (Only for ScriptableObjects), and a mini button to jump to the enclosing group.
     [FromGroup("TestGroup"), SerializeField]
     ElementConfig element;
+    
+    [FromConfig(typeof(SampleConfig)), SerializeField]
+    ElementConfig sampleConfigItem;
 
     public float attack;
     public float stamina;

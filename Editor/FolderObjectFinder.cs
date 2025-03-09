@@ -65,7 +65,7 @@ namespace PhEngine.QuickDropdown.Editor
             return path != null && pathResults.Any(r => r.assetPath == path);
         }
 
-        public override bool IsSourceValid()
+        public override bool CheckSource()
         {
             return Directory.Exists(AssetPath);
         }
