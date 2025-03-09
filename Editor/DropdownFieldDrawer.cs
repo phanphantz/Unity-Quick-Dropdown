@@ -117,9 +117,21 @@ namespace PhEngine.QuickDropdown.Editor
                 Rect buttonRect = new Rect(detailRect.x + 30, detailRect.y, path.Length * 6f, detailRect.height);
                 GUI.DrawTexture(iconRect, image, ScaleMode.ScaleToFit);
                 var oldColor = GUI.color;
-                GUI.color = finder.IsSourceValid()? linkColor : Color.yellow;
+
+                var isSourceValid = finder.IsSourceValid();
+                GUI.color = isSourceValid? linkColor : Color.yellow;
                 if (GUI.Button(buttonRect, new GUIContent(path), EditorStyles.miniLabel))
                     finder.SelectAndPingSource();
+
+                if (!isSourceValid)
+                {
+                    buttonRect.x += buttonRect.width;
+                    buttonRect.width = 52f;
+                    GUI.color = oldColor;
+                    if (GUI.Button(buttonRect, new GUIContent("Create"), EditorStyles.miniButton))
+                        finder.CreateSourceIfNotExists();
+                }
+                
                 GUI.color = oldColor;
             }
 

@@ -33,7 +33,7 @@ namespace PhEngine.QuickDropdown.Editor
         {
             return QuickDropdownEditorUtils.LoadAssetAtPath(pathResults[index].assetPath, Type);
         }
-        
+
         public override void SelectAndPingSource()
         {
             var folderAsset = QuickDropdownEditorUtils.LoadAssetAtPath(AssetPath, typeof(Object));
@@ -41,7 +41,7 @@ namespace PhEngine.QuickDropdown.Editor
             {
                 EditorUtility.FocusProjectWindow();
                 Selection.activeObject = folderAsset;
-                EditorApplication.delayCall += () => { EditorApplication.ExecuteMenuItem("Assets/Open");};
+                EditorApplication.delayCall += () => { EditorApplication.ExecuteMenuItem("Assets/Open"); };
             }
         }
 
@@ -49,10 +49,8 @@ namespace PhEngine.QuickDropdown.Editor
         {
             if (string.IsNullOrEmpty(AssetPath))
                 throw new InvalidOperationException("Directory path is empty.");
-                
-            if (!Directory.Exists(AssetPath))
-                Directory.CreateDirectory(AssetPath);
-                
+            
+            CreateSourceIfNotExists();
             QuickDropdownEditorUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, AssetPath);
         }
 
@@ -70,6 +68,15 @@ namespace PhEngine.QuickDropdown.Editor
         public override bool IsSourceValid()
         {
             return Directory.Exists(AssetPath);
+        }
+
+        public override void CreateSourceIfNotExists()
+        {
+            if (!Directory.Exists(AssetPath))
+            {
+                Directory.CreateDirectory(AssetPath);
+                AssetDatabase.Refresh();
+            }
         }
     }
 }

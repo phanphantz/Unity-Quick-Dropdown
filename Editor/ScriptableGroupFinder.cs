@@ -32,9 +32,7 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override void CreateNewScriptableObject()
         {
-            if (!group)
-                group = QuickDropdownEditorUtils.PrepareGroup(ObjectPath);
-
+            CreateSourceIfNotExists();
             var groupPath = QuickDropdownEditorUtils.GetAssetPath(group);
             var newInstance = QuickDropdownEditorUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
             group.Add(newInstance);
@@ -54,6 +52,12 @@ namespace PhEngine.QuickDropdown.Editor
         public override bool IsSourceValid()
         {
             return QuickDropdownEditorUtils.FindGroup(ObjectPath);
+        }
+
+        public override void CreateSourceIfNotExists()
+        {
+            if (!group)
+                group = QuickDropdownEditorUtils.PrepareGroup(ObjectPath);
         }
     }
 }
