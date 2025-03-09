@@ -89,8 +89,7 @@ namespace PhEngine.QuickDropdown.Editor
 
                 var buttonWidth = 25f;
                 var allButtonWidth = 0f;
-                var isShouldDrawCreateButton = type.IsSubclassOf(typeof(ScriptableObject)) &&
-                                               field is IHasCreateSOButton {IsHideCreateSOButton: false};
+                var isShouldDrawCreateButton = type.IsSubclassOf(typeof(ScriptableObject)) && !field.IsHideCreateSOButton;
                 if (isShouldDrawCreateButton)
                     allButtonWidth += buttonWidth;
                 if (!field.IsHideInspectButton)

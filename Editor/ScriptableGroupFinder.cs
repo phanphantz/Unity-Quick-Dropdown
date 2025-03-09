@@ -16,10 +16,15 @@ namespace PhEngine.QuickDropdown.Editor
         
         public override string[] SearchForItems()
         {
-            group = QuickDropdownEditorUtils.FindGroup(ObjectPath);
+            group = FindMyGroup();
             return group ? group.GetStringOptions(Type) : new string[] { };
         }
-        
+
+        protected virtual ScriptableGroup FindMyGroup()
+        {
+            return QuickDropdownEditorUtils.FindGroup(ObjectPath);
+        }
+
         public override Object GetResultAtIndex(int index)
         {
             return group.GetElementFromFlatTree(Type, index);
@@ -55,7 +60,7 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override bool IsSourceValid()
         {
-            return QuickDropdownEditorUtils.FindGroup(ObjectPath);
+            return FindMyGroup();
         }
 
         public override void CreateSourceIfNotExists()

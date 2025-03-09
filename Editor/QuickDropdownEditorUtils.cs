@@ -62,6 +62,8 @@ namespace PhEngine.QuickDropdown.Editor
         static Texture unsafeObjectIcon;
         
         static Dictionary<string, ScriptableGroup> cachedGroups = new Dictionary<string, ScriptableGroup>();
+        static Dictionary<string, ScriptableGroup> cachedConfigGroups = new Dictionary<string, ScriptableGroup>();
+        
         public static AssetFileResult[] FindInFolder(string typeName, string folderPath)
         {
             if (!Directory.Exists(folderPath))
@@ -86,6 +88,29 @@ namespace PhEngine.QuickDropdown.Editor
             {
                 if (!cachedGroups.TryAdd(name, result))
                     cachedGroups[name] = result;
+            }
+            
+            return result;
+        }
+        
+        public static ScriptableGroup FindConfigGroupOfType(string typeName)
+        {
+            if (cachedConfigGroups.TryGetValue(typeName, out var result) && result != null)
+                return result;
+
+            var possibleItems = AssetDatabase
+                .FindAssets("t:" + typeName)
+                .Select(guid => AssetDatabase.LoadAssetAtPath<ScriptableGroup>(AssetDatabase.GUIDToAssetPath(guid)))
+                .ToArray();
+
+            if (possibleItems.Length > 1)
+                Debug.LogWarning("There are more than one Config Group of type: " + typeName + " in the project. Please make sure there are only one Config Group.");
+            
+            result = possibleItems.FirstOrDefault(g => g);
+            if (result)
+            {
+                if (!cachedConfigGroups.TryAdd(typeName, result))
+                    cachedConfigGroups[typeName] = result;
             }
             
             return result;
