@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -37,7 +38,11 @@ namespace PhEngine.QuickDropdown.Editor
         {
             var folderAsset = QuickDropdownEditorUtils.LoadAssetAtPath(AssetPath, typeof(Object));
             if (folderAsset != null)
-                QuickDropdownEditorUtils.SelectAndPing(folderAsset);
+            {
+                EditorUtility.FocusProjectWindow();
+                Selection.activeObject = folderAsset;
+                EditorApplication.delayCall += () => { EditorApplication.ExecuteMenuItem("Assets/Open");};
+            }
         }
 
         public override void CreateNewScriptableObject()
