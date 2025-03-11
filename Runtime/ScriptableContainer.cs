@@ -8,10 +8,10 @@ namespace PhEngine.QuickDropdown
 {
     public abstract class ScriptableContainer : ScriptableObject
     {
-        public abstract string[] GetStringOptions(Type type, string prefix = "");
-        public abstract bool ContainsObject(Object obj);
+        public abstract string[] GetStringOptions(Type type);
+        public abstract bool ContainsObject(Object targetObject);
         public abstract void AddObject(Object obj);
-        public abstract Object GetObjectFromFlatTree(Type type, int index);
+        public abstract Object GetObjectFromFlatTree(Type type, int targetIndex);
     }
     
     public abstract class ScriptableContainer<T> : ScriptableContainer where T : Object
@@ -23,78 +23,33 @@ namespace PhEngine.QuickDropdown
         {
             elementList.Add(element as T);
         }
-        
-        public override string[] GetStringOptions(Type type, string prefix = "")
+
+        public override string[] GetStringOptions(Type type)
         {
-            return elementList
-                .SelectMany(so=>
-                {
-                    //TODO: Should only allow this for ScriptableGroup and should implement cyclic reference prevention 
-                    if (so is ScriptableContainer nestedGroup)
-                        return nestedGroup.GetStringOptions(type, prefix + nestedGroup.name + "/").ToArray();
-                    
-                    return so && so.GetType() == type ? new[] { prefix + so.name } : new string[]{};
-                })
+            return ElementList
+                .Where(so => so && so.GetType() == type)
+                .Select(so => so.name)
                 .ToArray();
         }
-
-        public override Object GetObjectFromFlatTree(Type type, int index)
+        
+        public override Object GetObjectFromFlatTree(Type type, int targetIndex)
         {
             var currentIndex = 0;
-            foreach (var e in elementList)
+            foreach (var element in ElementList)
             {
-                var result = FlattenAndReturn(type, index, e, ref currentIndex);
-                if (result) 
-                    return result;
+                var isTypeMatched = element && element.GetType() == type;
+                if (currentIndex == targetIndex && isTypeMatched)
+                    return element;
+
+                if (isTypeMatched)
+                    currentIndex++;
             }
             return null;
         }
-
-        static T FlattenAndReturn(Type type, int targetIndex, T element, ref int currentIndex)
+        
+        public override bool ContainsObject(Object targetObject)
         {
-            var isTypeMatched = element && element.GetType() == type;
-            if (element is ScriptableContainer<T> nestedGroup)
-            {
-                foreach (var nestedElement in nestedGroup.elementList)
-                {
-                    if (currentIndex == targetIndex)
-                        return FlattenAndReturn(type, targetIndex, nestedElement, ref currentIndex);
-                  
-                    if (nestedElement && nestedElement.GetType() == type)
-                        currentIndex++;
-                }
-            }
-            else if (currentIndex == targetIndex && isTypeMatched)
-            {
-                return element;
-            }
-            else if (isTypeMatched)
-                currentIndex++;
-            
-            return null;
-        }
-
-        public override bool ContainsObject(Object obj)
-        {
-            var targetObject = obj as T;
-            if (targetObject == null)
-                return false;
-            
-            foreach (var e in elementList)
-            {
-                var result = FlattenAndCheckContains(e, targetObject);
-                if (result)
-                    return true;
-            }
-            return false;
-        }
-
-        bool FlattenAndCheckContains(T element, T targetToCheck)
-        {
-            if (element is ScriptableContainer<T> nestedGroup)
-                return nestedGroup.ContainsObject(targetToCheck);
-            
-            return element == targetToCheck;
+            return ElementList.Contains(targetObject);
         }
     }
 }
