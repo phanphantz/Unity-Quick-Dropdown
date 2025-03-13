@@ -17,7 +17,7 @@ namespace PhEngine.QuickDropdown.Editor
             Type = type;
         }
 
-        public bool IsTypeSupported(Type type)
+        public virtual bool IsTypeSupported(Type type)
         {
             return type.IsSubclassOf(typeof(Object));
         }
@@ -28,7 +28,7 @@ namespace PhEngine.QuickDropdown.Editor
         public abstract void CreateNewScriptableObject();
         public abstract Texture GetSourceIcon();
         public abstract bool IsBelongToSource(Object currentObject);
-        public abstract bool CheckSource();
+        public abstract bool CheckAndPrepareSource();
         public abstract void CreateSourceIfNotExists();
     }
 }

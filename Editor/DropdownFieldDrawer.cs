@@ -47,7 +47,7 @@ namespace PhEngine.QuickDropdown.Editor
                 return;
             }
             
-            var isSourceValid = finder.CheckSource();
+            var isSourceValid = finder.CheckAndPrepareSource();
             if (!isSourceValid)
             {
                 var rect = position;
@@ -181,7 +181,7 @@ namespace PhEngine.QuickDropdown.Editor
                         EditorUtility.OpenPropertyEditor(property.objectReferenceValue);
                         break;
                     case InspectMode.Select:
-                        QuickDropdownEditorUtils.SelectAndPing(property.objectReferenceValue);
+                        QuickDropdownEditorUtils.SelectAndPingInProjectTab(property.objectReferenceValue);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -208,6 +208,9 @@ namespace PhEngine.QuickDropdown.Editor
                 FromConfig => new ConfigFinder(field, type),
                 FromFolder => new FolderObjectFinder(field, type),
                 FromGroup => new ScriptableGroupFinder(field, type),
+#if ADDRESSABLES_DROPDOWN
+                PhEngine.QuickDropdown.Addressables.FromAddressable => new Addressables.AddressableEntryFinder(field, type),
+#endif
                 _ => throw new NotImplementedException($"Don't know how to get finder for {type}")
             };
         }

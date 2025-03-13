@@ -1,4 +1,5 @@
-﻿namespace PhEngine.QuickDropdown.Addressables
+﻿#if ADDRESSABLES_DROPDOWN
+namespace PhEngine.QuickDropdown.Addressables
 {
     public class FromAddressable : DropdownField
     {
@@ -7,3 +8,4 @@
         }
     }
 }
+#endif

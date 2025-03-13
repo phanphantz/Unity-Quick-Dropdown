@@ -26,7 +26,7 @@ namespace PhEngine.QuickDropdown.Editor
         
         public override void SelectAndPingSource()
         {
-            QuickDropdownEditorUtils.SelectAndPing(container);
+            QuickDropdownEditorUtils.SelectAndPingInProjectTab(container);
         }
 
         public override void CreateNewScriptableObject()
@@ -52,7 +52,7 @@ namespace PhEngine.QuickDropdown.Editor
             return container.ContainsObject(currentObject);
         }
 
-        public override bool CheckSource()
+        public override bool CheckAndPrepareSource()
         {
             container = FindContainer(ObjectPath);
             return container;
@@ -62,8 +62,8 @@ namespace PhEngine.QuickDropdown.Editor
         {
             if (container) 
                 return;
-            
-            var groupPath = $"Assets/Resources/QuickDropdown/{ObjectPath}.asset";
+
+            var groupPath = QuickDropdownEditorUtils.GetDefaultAssetPath(ObjectPath);
             var directory = Path.GetDirectoryName(groupPath);
             if (string.IsNullOrEmpty(directory))
                 throw new InvalidOperationException("Directory path is empty.");

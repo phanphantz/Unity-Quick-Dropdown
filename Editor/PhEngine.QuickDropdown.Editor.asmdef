@@ -1,0 +1,26 @@
+{
+    "name": "PhEngine.QuickDropdown.Editor",
+    "rootNamespace": "PhEngine",
+    "references": [
+        "PhEngine.QuickDropdown",
+        "Unity.Addressables.Editor",
+        "Unity.Addressables"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "0.0",
+            "define": "ADDRESSABLES_DROPDOWN"
+        }
+    ],
+    "noEngineReferences": false
+}

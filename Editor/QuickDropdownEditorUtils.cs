@@ -70,12 +70,13 @@ namespace PhEngine.QuickDropdown.Editor
                 .ToArray();
         }
         
-        public static ScriptableObject CreateScriptableObjectAndSelect(string name, Type type, string folderPath)
+        public static ScriptableObject CreateScriptableObjectAndSelect(string name, Type type, string folderPath, bool isSelectAndPing = true)
         {
             name = string.IsNullOrEmpty(name) ? type.Name : name;
             var assetPath = GetUniqueAssetFilePath(name, folderPath);
             var loadedInstance = CreateScriptableObject(type, assetPath);
-            SelectAndPing(loadedInstance);
+            if (isSelectAndPing)
+                SelectAndPingInProjectTab(loadedInstance);
             return loadedInstance;
         }
 
@@ -102,7 +103,7 @@ namespace PhEngine.QuickDropdown.Editor
             return assetPath;
         }
 
-        public static void SelectAndPing(Object obj)
+        public static void SelectAndPingInProjectTab(Object obj)
         {
             EditorUtility.FocusProjectWindow();
             Selection.activeObject = obj;
@@ -130,6 +131,11 @@ namespace PhEngine.QuickDropdown.Editor
         public static string GetAssetPath(Object obj)
         {
             return AssetDatabase.GetAssetPath(obj);
+        }
+
+        public static string GetDefaultAssetPath(string assetName)
+        {
+            return $"Assets/Resources/QuickDropdown/{assetName}.asset";
         }
     }
 }

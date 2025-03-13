@@ -18,7 +18,7 @@ namespace PhEngine.QuickDropdown.Editor
             return possibleItems.FirstOrDefault();
         }
 
-        public override bool CheckSource()
+        public override bool CheckAndPrepareSource()
         {
             possibleItems = AssetDatabase
                 .FindAssets("t:" + FromConfig.ConfigType.Name)
@@ -32,7 +32,7 @@ namespace PhEngine.QuickDropdown.Editor
                 return false;
             }
 
-            return base.CheckSource();
+            return base.CheckAndPrepareSource();
         }
 
         protected override ScriptableContainer CreateNewContainer(string groupPath)
