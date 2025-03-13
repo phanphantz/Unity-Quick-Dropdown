@@ -34,6 +34,7 @@ public class QuickDropdownExample : MonoBehaviour
     
     //A Correct way to draw dropdown for List and Array.
     [SerializeField] List<ElementConfigData> workingDropdownList = new List<ElementConfigData>();
+    [SerializeField] ElementConfigData[] workingDropdownArray = new ElementConfigData[] {};
     
     [Serializable]
     public class ElementConfigData
