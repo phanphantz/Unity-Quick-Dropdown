@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using PhEngine.QuickDropdown;
 using UnityEngine;
 
@@ -25,4 +27,19 @@ public class QuickDropdownExample : MonoBehaviour
     //You can change the button behaviour using different InpsectModes
     [FromFolder("Prefabs", inspectMode: InspectMode.Select), SerializeField]
     GameObject prefab;
+    
+    //This will NOT work. DropdownFields does not directly support List and Array.
+    [FromGroup("TestGroup"), SerializeField]
+    List<ElementConfig> notWorkingList = new List<ElementConfig>();
+    
+    //A Correct way to draw dropdown for List and Array.
+    [SerializeField] List<ElementConfigData> workingDropdownList = new List<ElementConfigData>();
+    
+    [Serializable]
+    public class ElementConfigData
+    {
+        [FromGroup("TestGroup", isHideInfo: true)]
+        public ElementConfig config;
+    }
 }
+

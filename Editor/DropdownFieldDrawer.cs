@@ -16,11 +16,18 @@ namespace PhEngine.QuickDropdown.Editor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             return base.GetPropertyHeight(property, label)
-                   + (!((DropdownField) attribute).IsHideInfo ? EditorGUIUtility.singleLineHeight + 3f : 0);
+                   + (!((DropdownField) attribute).IsHideInfo && GetFieldType(property) != null ? EditorGUIUtility.singleLineHeight + 3f : 0);
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            var type = GetFieldType(property);
+            if (type == null)
+            {
+                DrawDefaultField(position, property, label);
+                return;
+            }
+            
             var lineHeight = EditorGUIUtility.singleLineHeight;
             Rect detailRect = new Rect(position.x, position.y + lineHeight, position.width, lineHeight);
             var field = (DropdownField) attribute;
@@ -37,7 +44,6 @@ namespace PhEngine.QuickDropdown.Editor
             }
 
             var path = field.Path;
-            var type = GetFieldType(property);
             var isUnityObject = type.IsSubclassOf(typeof(Object));
             if (type.IsSubclassOf(typeof(MonoBehaviour)))
                 type = typeof(GameObject);
@@ -178,9 +184,7 @@ namespace PhEngine.QuickDropdown.Editor
                 GUI.color = errorColor;
                 if (field is {IsHideInfo: false})
                 {
-                    var rect = position;
-                    rect.height = EditorGUIUtility.singleLineHeight;
-                    EditorGUI.PropertyField(rect, property, label);
+                    DrawDefaultField(position, property, label);
                     GUI.Label(detailRect, reason, EditorStyles.miniLabel);
                 }
 
@@ -194,6 +198,13 @@ namespace PhEngine.QuickDropdown.Editor
                 else if (type == typeof(string))
                     property.stringValue = targetObject ? targetObject.name : string.Empty;
             }
+        }
+
+        static void DrawDefaultField(Rect position, SerializedProperty property, GUIContent label)
+        {
+            var rect = position;
+            rect.height = EditorGUIUtility.singleLineHeight;
+            EditorGUI.PropertyField(rect, property, label);
         }
 
         static void DrawObjectInspectButton(SerializedProperty property, Rect inspectButtonRect, DropdownField field)
@@ -222,10 +233,51 @@ namespace PhEngine.QuickDropdown.Editor
         {
             var targetObject = property.serializedObject.targetObject;
             var targetType = targetObject.GetType();
-            var fieldInfo = targetType.GetField(property.propertyPath,
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-            return fieldInfo?.FieldType;
+            return GetFieldViaPath(targetType, property.propertyPath)?.FieldType;
+        }
+        
+        /// <summary>
+        /// Taken from: https://discussions.unity.com/t/a-smarter-way-to-get-the-type-of-serializedproperty/186674/6
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static FieldInfo GetFieldViaPath(Type type, string path)
+        {
+            var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            var parent = type;
+            var fi = parent.GetField(path, flags);
+            var paths = path.Split('.');
+            for (int i = 0; i < paths.Length; i++)
+            {
+                fi = parent?.GetField(paths[i], flags);
+                if (fi != null)
+                {
+                    // there are only two container field type that can be serialized:
+                    // Array and List<T>
+                    if (fi.FieldType.IsArray)
+                    {
+                            parent = fi.FieldType.GetElementType();
+                            i += 2;
+                        continue;
+                    }
+                    if (fi.FieldType.IsGenericType)
+                    {
+                            parent = fi.FieldType.GetGenericArguments()[0];
+                            i += 2;
+                        continue;
+                    }
+                    parent = fi.FieldType;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if (fi == null)
+                return type.BaseType != null ? GetFieldViaPath(type.BaseType, path) : null;
+            
+            return fi;
         }
 
         static ObjectFinder CreateFinder(DropdownField field, Type type)
