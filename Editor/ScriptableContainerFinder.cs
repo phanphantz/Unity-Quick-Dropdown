@@ -8,25 +8,25 @@ namespace PhEngine.QuickDropdown.Editor
 {
     public abstract class ScriptableContainerFinder : ObjectFinder
     {
-        ScriptableContainer container;
+        protected ScriptableContainer Container;
         protected ScriptableContainerFinder(DropdownField field, Type type) : base(field, type)
         {
         }
         
         public override string[] SearchForItems()
         {
-            return container ? container.GetStringOptions(Type) : new string[] { };
+            return Container ? Container.GetStringOptions(Type) : new string[] { };
         }
 
         public abstract ScriptableContainer FindContainer(string name);
         public override Object GetResultAtIndex(int index)
         {
-            return container.GetObjectFromFlatTree(Type, index);
+            return Container.GetObjectFromFlatTree(Type, index);
         }
         
         public override void SelectAndPingSource()
         {
-            QuickDropdownEditorUtils.SelectAndPingInProjectTab(container);
+            QuickDropdownEditorUtils.SelectAndPingInProjectTab(Container);
         }
 
         public override void CreateNewScriptableObject()
@@ -34,11 +34,11 @@ namespace PhEngine.QuickDropdown.Editor
             Undo.IncrementCurrentGroup();
             var undoId = Undo.GetCurrentGroup();
             CreateSourceIfNotExists();
-            var groupPath = QuickDropdownEditorUtils.GetAssetPath(container);
+            var groupPath = QuickDropdownEditorUtils.GetAssetPath(Container);
             var newInstance = QuickDropdownEditorUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
-            Undo.RegisterCompleteObjectUndo(container, "Create new ScriptableObject");
-            container.AddObject(newInstance);
-            EditorUtility.SetDirty(container);
+            Undo.RegisterCompleteObjectUndo(Container, "Create new ScriptableObject");
+            Container.AddObject(newInstance);
+            EditorUtility.SetDirty(Container);
             Undo.CollapseUndoOperations(undoId);
         }
 
@@ -49,18 +49,18 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override bool IsBelongToSource(object currentObject)
         {
-            return container.ContainsObject(currentObject as Object);
+            return Container.ContainsObject(currentObject as Object);
         }
 
         public override bool CheckAndPrepareSource()
         {
-            container = FindContainer(ObjectPath);
-            return container;
+            Container = FindContainer(ObjectPath);
+            return Container;
         }
 
         public override void CreateSourceIfNotExists()
         {
-            if (container) 
+            if (Container) 
                 return;
 
             var groupPath = QuickDropdownEditorUtils.GetDefaultAssetPath(ObjectPath);
@@ -71,7 +71,7 @@ namespace PhEngine.QuickDropdown.Editor
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-            container = CreateNewContainer(groupPath);
+            Container = CreateNewContainer(groupPath);
         }
 
         protected abstract ScriptableContainer CreateNewContainer(string groupPath);

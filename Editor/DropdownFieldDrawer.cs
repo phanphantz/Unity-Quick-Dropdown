@@ -16,7 +16,7 @@ namespace PhEngine.QuickDropdown.Editor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             return base.GetPropertyHeight(property, label)
-                   + (!((DropdownField) attribute).IsHideInfo && GetFieldType(property) != null ? EditorGUIUtility.singleLineHeight + 3f : 0);
+                   + (!((DropdownField) attribute).IsHideInfo ? EditorGUIUtility.singleLineHeight + 3f : 0);
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -44,10 +44,10 @@ namespace PhEngine.QuickDropdown.Editor
             }
 
             var path = field.Path;
-            var isUnityObject = type.IsSubclassOf(typeof(Object));
             if (type.IsSubclassOf(typeof(MonoBehaviour)))
                 type = typeof(GameObject);
-
+            
+            var isUnityObject = type.IsSubclassOf(typeof(Object));
             var finder = CreateFinder(field, type);
             if (!finder.IsTypeSupported(type))
             {
@@ -62,62 +62,9 @@ namespace PhEngine.QuickDropdown.Editor
                 rect.height = EditorGUIUtility.singleLineHeight;
                 EditorGUI.PropertyField(rect, property, label);
             }
-            else
+            else if (!TryDrawDropdownSection()) 
             {
-                var results = finder.SearchForItems();
-                var objectNames = results
-                    .Select(result => result.Split('/').LastOrDefault())
-                    .ToArray();
-
-                var currentIndex = -1;
-                var indexSearchResult = FindCurrentIndexResult(currentIndex, objectNames);
-                if (!indexSearchResult.isValid)
-                    return;
-                
-                currentIndex = indexSearchResult.index;
-                var baseOptions = new[] {new GUIContent("NULL", QuickDropdownEditorUtils.GetWarningIcon())};
-                var icon = QuickDropdownEditorUtils.GetIconForType(type);
-                var options = baseOptions
-                    .Concat(results.Select(s => new GUIContent(s, icon)))
-                    .ToArray();
-
-                var buttonWidth = 25f;
-                var allButtonWidth = 0f;
-                var isShouldDrawCreateButton = type.IsSubclassOf(typeof(ScriptableObject)) && !field.IsHideCreateSOButton;
-                var isShouldDrawInspectButton = !field.IsHideInspectButton && isUnityObject;
-                if (isShouldDrawCreateButton)
-                    allButtonWidth += buttonWidth;
-                if (isShouldDrawInspectButton)
-                    allButtonWidth += buttonWidth;
-
-                Rect fieldRect = new Rect(position.x, position.y, position.width - allButtonWidth, lineHeight);
-                Rect inspectButtonRect = new Rect(position.x + position.width - allButtonWidth, position.y, buttonWidth,
-                    lineHeight);
-                Rect createButtonRect =
-                    new Rect(
-                        position.x + position.width - allButtonWidth + (field.IsHideInspectButton ? 0 : buttonWidth),
-                        position.y, buttonWidth, lineHeight);
-
-                var selectedIndex = EditorGUI.Popup(fieldRect, new GUIContent(label.text), currentIndex, options);
-                if (selectedIndex != currentIndex)
-                {
-                    if (selectedIndex != 0)
-                    {
-                        var targetObject = finder.GetResultAtIndex(selectedIndex - 1);
-                        ApplyChangeToProperty(targetObject);
-                    }
-                    else
-                    {
-                        ApplyChangeToProperty(null);
-                    }
-                    property.serializedObject.ApplyModifiedProperties();
-                }
-
-                if (isShouldDrawInspectButton)
-                    DrawObjectInspectButton(property, inspectButtonRect, field);
-
-                if (isShouldDrawCreateButton && GUI.Button(createButtonRect, "+"))
-                    finder.CreateNewScriptableObject();
+                return;
             }
             
             if (!field.IsHideInfo)
@@ -190,13 +137,94 @@ namespace PhEngine.QuickDropdown.Editor
 
                 GUI.color = oldColor;
             }
-            
-            void ApplyChangeToProperty(Object targetObject)
+
+            bool TryDrawDropdownSection()
             {
-                if (isUnityObject)
-                    property.objectReferenceValue = targetObject;
-                else if (type == typeof(string))
-                    property.stringValue = targetObject ? targetObject.name : string.Empty;
+                var isShouldDrawCreateButton = type.IsSubclassOf(typeof(ScriptableObject)) && !field.IsHideCreateSOButton;
+                var isShouldDrawInspectButton = !field.IsHideInspectButton && isUnityObject;
+                
+                var buttonWidth = 25f;
+                var allButtonWidth = 0f;
+                if (isShouldDrawCreateButton)
+                    allButtonWidth += buttonWidth;
+                if (isShouldDrawInspectButton)
+                    allButtonWidth += buttonWidth;
+                
+                
+                //TODO: CustomDropdownPopup (WIP)
+                // // Create a button to open the popup
+                // if (GUI.Button(new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight), label))
+                // {
+                // PopupWindow.Show(
+                //     new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight, position.width, 0),
+                //     new CustomDropdownPopup(objectNames, selectedOption =>
+                //     {
+                //         // Handle selection
+                //         //ApplyChangeToProperty(selectedOption);
+                //         property.serializedObject.ApplyModifiedProperties();
+                //     }));
+                //
+                // }
+                
+                var results = finder.SearchForItems();
+                var objectNames = results
+                    .Select(result => result.Split('/').LastOrDefault())
+                    .ToArray();
+
+                var currentIndex = -1;
+                var indexSearchResult = FindCurrentIndexResult(currentIndex, objectNames);
+                if (!indexSearchResult.isValid)
+                    return false;
+                
+                currentIndex = indexSearchResult.index;
+                var baseOptions = new[] {new GUIContent("NULL", QuickDropdownEditorUtils.GetWarningIcon())};
+                var icon = QuickDropdownEditorUtils.GetIconForType(type);
+                var options = baseOptions
+                    .Concat(results.Select(s => new GUIContent(s, icon)))
+                    .ToArray();
+                    
+                Rect fieldRect = new Rect(position.x, position.y, position.width - allButtonWidth, lineHeight);
+
+                var selectedIndex = EditorGUI.Popup(fieldRect, new GUIContent(label.text), currentIndex, options);
+                if (selectedIndex != currentIndex)
+                {
+                    if (selectedIndex != 0)
+                    {
+                        var targetObject = finder.GetResultAtIndex(selectedIndex - 1);
+                        ApplyChangeToProperty(targetObject);
+                    }
+                    else
+                    {
+                        ApplyChangeToProperty(null);
+                    }
+                    property.serializedObject.ApplyModifiedProperties();
+                }
+
+                if (isShouldDrawInspectButton)
+                {
+                    var inspectButtonRect = new Rect(position.x + position.width - allButtonWidth, position.y, buttonWidth,
+                        lineHeight);
+                    DrawObjectInspectButton(property, inspectButtonRect, field);
+                }
+                
+                if (isShouldDrawCreateButton)
+                {
+                    var createButtonRect = new Rect(
+                        position.x + position.width - allButtonWidth + (field.IsHideInspectButton ? 0 : buttonWidth),
+                        position.y, buttonWidth, lineHeight);
+                
+                    if (GUI.Button(createButtonRect, "+")) 
+                        finder.CreateNewScriptableObject();
+                }
+                return true;
+                
+                void ApplyChangeToProperty(Object targetObject)
+                {
+                    if (isUnityObject)
+                        property.objectReferenceValue = targetObject;
+                    else if (type == typeof(string))
+                        property.stringValue = targetObject ? targetObject.name : string.Empty;
+                }
             }
         }
 
@@ -294,4 +322,46 @@ namespace PhEngine.QuickDropdown.Editor
             };
         }
     }
+    
+    //TODO: CustomDropdownPopup (WIP)
+    // public class CustomDropdownPopup : PopupWindowContent
+    // {
+    //     private string[] options; // Options to display
+    //     private Action<string> onSelect; // Callback for selection
+    //     private Vector2 scrollPosition; // For scrolling if needed
+    //
+    //     public CustomDropdownPopup(string[] options, Action<string> onSelect)
+    //     {
+    //         this.options = options;
+    //         this.onSelect = onSelect;
+    //     }
+    //
+    //     public override Vector2 GetWindowSize()
+    //     {
+    //         return new Vector2(200, Mathf.Min(300, options.Length * EditorGUIUtility.singleLineHeight));
+    //     }
+    //
+    //     public override void OnGUI(Rect rect)
+    //     {
+    //         if (options == null || options.Length == 0)
+    //         {
+    //             EditorGUILayout.LabelField("No options available.");
+    //             return;
+    //         }
+    //
+    //         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+    //
+    //         foreach (var option in options)
+    //         {
+    //             if (GUILayout.Button(option))
+    //             {
+    //                 onSelect?.Invoke(option); // Invoke the callback with the selected option
+    //                 editorWindow.Close(); // Close the popup after selection
+    //             }
+    //         }
+    //
+    //         EditorGUILayout.EndScrollView();
+    //     }
+    // }
+
 }

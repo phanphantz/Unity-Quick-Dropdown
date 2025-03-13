@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -11,6 +12,8 @@ namespace PhEngine.QuickDropdown.Editor
     {
         AssetFileResult[] pathResults;
         string AssetPath { get; }
+        
+        static HashSet<string> folderList = new HashSet<string>();
 
         public FolderObjectFinder(DropdownField field, Type type) : base(field, type)
         {
@@ -67,12 +70,18 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override bool CheckAndPrepareSource()
         {
-            return Directory.Exists(AssetPath);
+            if (folderList.Contains(AssetPath)|| AssetDatabase.IsValidFolder(AssetPath))
+            {
+                folderList.Add(AssetPath);
+                return true;
+            }
+
+            return false;
         }
 
         public override void CreateSourceIfNotExists()
         {
-            if (!Directory.Exists(AssetPath))
+            if (!AssetDatabase.IsValidFolder(AssetPath))
             {
                 Directory.CreateDirectory(AssetPath);
                 AssetDatabase.Refresh();
