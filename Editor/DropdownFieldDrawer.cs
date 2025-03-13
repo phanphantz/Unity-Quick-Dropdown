@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace PhEngine.QuickDropdown.Editor
 {
@@ -37,6 +38,7 @@ namespace PhEngine.QuickDropdown.Editor
 
             var path = field.Path;
             var type = GetFieldType(property);
+            var isUnityObject = type.IsSubclassOf(typeof(Object));
             if (type.IsSubclassOf(typeof(MonoBehaviour)))
                 type = typeof(GameObject);
 
@@ -62,25 +64,11 @@ namespace PhEngine.QuickDropdown.Editor
                     .ToArray();
 
                 var currentIndex = -1;
-                var currentObject = property.objectReferenceValue;
-                if (currentObject)
-                {
-                    //Get index by name first
-                    currentIndex = Array.IndexOf(objectNames, currentObject.name);
-
-                    //Recheck if the object reference actually belong to source
-                    if (currentIndex != -1 && !finder.IsBelongToSource(currentObject))
-                        currentIndex = -1;
-                }
-
-                //Index 0 is NULL option
-                currentIndex++;
-                if (currentIndex == 0 && property.objectReferenceValue)
-                {
-                    DrawFallbackField("This Object does not belong to path: " + path);
+                var indexSearchResult = FindCurrentIndexResult(currentIndex, objectNames);
+                if (!indexSearchResult.isValid)
                     return;
-                }
-
+                
+                currentIndex = indexSearchResult.index;
                 var baseOptions = new[] {new GUIContent("NULL", QuickDropdownEditorUtils.GetWarningIcon())};
                 var icon = QuickDropdownEditorUtils.GetIconForType(type);
                 var options = baseOptions
@@ -90,9 +78,10 @@ namespace PhEngine.QuickDropdown.Editor
                 var buttonWidth = 25f;
                 var allButtonWidth = 0f;
                 var isShouldDrawCreateButton = type.IsSubclassOf(typeof(ScriptableObject)) && !field.IsHideCreateSOButton;
+                var isShouldDrawInspectButton = !field.IsHideInspectButton && isUnityObject;
                 if (isShouldDrawCreateButton)
                     allButtonWidth += buttonWidth;
-                if (!field.IsHideInspectButton)
+                if (isShouldDrawInspectButton)
                     allButtonWidth += buttonWidth;
 
                 Rect fieldRect = new Rect(position.x, position.y, position.width - allButtonWidth, lineHeight);
@@ -109,18 +98,17 @@ namespace PhEngine.QuickDropdown.Editor
                     if (selectedIndex != 0)
                     {
                         var targetObject = finder.GetResultAtIndex(selectedIndex - 1);
-                        property.objectReferenceValue = targetObject;
+                        ApplyChangeToProperty(targetObject);
                     }
                     else
                     {
-                        property.objectReferenceValue = null;
+                        ApplyChangeToProperty(null);
                     }
-
                     property.serializedObject.ApplyModifiedProperties();
                 }
 
-                if (!field.IsHideInspectButton)
-                    DrawInspectButton(property, inspectButtonRect, field);
+                if (isShouldDrawInspectButton)
+                    DrawObjectInspectButton(property, inspectButtonRect, field);
 
                 if (isShouldDrawCreateButton && GUI.Button(createButtonRect, "+"))
                     finder.CreateNewScriptableObject();
@@ -152,6 +140,37 @@ namespace PhEngine.QuickDropdown.Editor
 
                 GUI.color = oldColor;
             }
+            
+            (bool isValid, int index) FindCurrentIndexResult(int currentIndex, string[] objectNames)
+            {
+                Object currentObject = null;
+                string rawAddress = "";
+                if (isUnityObject)
+                {
+                    currentObject = property.objectReferenceValue;
+                }
+                else if (type == typeof(string))
+                {
+                    rawAddress = property.stringValue;
+                }
+                if (currentObject || !string.IsNullOrEmpty(rawAddress))
+                {
+                    //Get index by name first
+                    currentIndex = Array.IndexOf(objectNames, isUnityObject ? currentObject.name : rawAddress);
+
+                    //Recheck if the object reference actually belong to source
+                    if (currentIndex != -1 && !finder.IsBelongToSource(isUnityObject ? currentObject : rawAddress))
+                        currentIndex = -1;
+                }
+                //Index 0 is NULL option
+                currentIndex++;
+                if (currentIndex == 0 &&currentObject)
+                {
+                    DrawFallbackField("This Object does not belong to path: " + path);
+                    return (false, -1);
+                }
+                return (true, currentIndex);
+            }
 
             void DrawFallbackField(string reason)
             {
@@ -167,9 +186,17 @@ namespace PhEngine.QuickDropdown.Editor
 
                 GUI.color = oldColor;
             }
+            
+            void ApplyChangeToProperty(Object targetObject)
+            {
+                if (isUnityObject)
+                    property.objectReferenceValue = targetObject;
+                else if (type == typeof(string))
+                    property.stringValue = targetObject ? targetObject.name : string.Empty;
+            }
         }
 
-        static void DrawInspectButton(SerializedProperty property, Rect inspectButtonRect, DropdownField field)
+        static void DrawObjectInspectButton(SerializedProperty property, Rect inspectButtonRect, DropdownField field)
         {
             EditorGUI.BeginDisabledGroup(property.objectReferenceValue == null);
             if (GUI.Button(inspectButtonRect, new GUIContent(EditorGUIUtility.IconContent("d_Search Icon"))))

@@ -13,8 +13,8 @@ namespace PhEngine.QuickDropdown.Editor
         {
             if (unsafeObjectIcon)
                 return unsafeObjectIcon;
-            
-            unsafeObjectIcon =  EditorGUIUtility.IconContent("d_Prefab On Icon").image;
+
+            unsafeObjectIcon = EditorGUIUtility.IconContent("d_Prefab On Icon").image;
             return unsafeObjectIcon;
         }
 
@@ -22,17 +22,17 @@ namespace PhEngine.QuickDropdown.Editor
         {
             if (unsafePrefabIcon)
                 return unsafePrefabIcon;
-            
-            unsafePrefabIcon =  EditorGUIUtility.IconContent("d_Prefab Icon").image;
+
+            unsafePrefabIcon = EditorGUIUtility.IconContent("d_Prefab Icon").image;
             return unsafePrefabIcon;
         }
-        
+
         public static Texture GetScriptableObjectIcon()
         {
             if (unsafeScriptableObjectIcon)
                 return unsafeScriptableObjectIcon;
-            
-            unsafeScriptableObjectIcon =  EditorGUIUtility.IconContent("ScriptableObject Icon").image;
+
+            unsafeScriptableObjectIcon = EditorGUIUtility.IconContent("ScriptableObject Icon").image;
             return unsafeScriptableObjectIcon;
         }
 
@@ -44,13 +44,13 @@ namespace PhEngine.QuickDropdown.Editor
             unsafeWarningIcon = EditorGUIUtility.IconContent("console.warnicon.inactive.sml@2x").image;
             return unsafeWarningIcon;
         }
-        
+
         public static Texture GetFolderIcon()
         {
             if (unsafeFolderIcon)
                 return unsafeFolderIcon;
-            
-            unsafeFolderIcon =  EditorGUIUtility.IconContent("d_FolderOpened Icon").image;
+
+            unsafeFolderIcon = EditorGUIUtility.IconContent("d_FolderOpened Icon").image;
             return unsafeFolderIcon;
         }
 
@@ -59,18 +59,19 @@ namespace PhEngine.QuickDropdown.Editor
         static Texture unsafeFolderIcon;
         static Texture unsafePrefabIcon;
         static Texture unsafeObjectIcon;
-        
+
         public static AssetFileResult[] FindInFolder(string typeName, string folderPath)
         {
             if (!Directory.Exists(folderPath))
                 return new AssetFileResult[] { };
-            
-            return AssetDatabase.FindAssets("t:" + typeName, new []{ folderPath })
+
+            return AssetDatabase.FindAssets("t:" + typeName, new[] {folderPath})
                 .Select(guid => new AssetFileResult(AssetDatabase.GUIDToAssetPath(guid)))
                 .ToArray();
         }
-        
-        public static ScriptableObject CreateScriptableObjectAndSelect(string name, Type type, string folderPath, bool isSelectAndPing = true)
+
+        public static ScriptableObject CreateScriptableObjectAndSelect(string name, Type type, string folderPath,
+            bool isSelectAndPing = true)
         {
             name = string.IsNullOrEmpty(name) ? type.Name : name;
             var assetPath = GetUniqueAssetFilePath(name, folderPath);
@@ -85,7 +86,7 @@ namespace PhEngine.QuickDropdown.Editor
             AssetDatabase.CreateAsset(ScriptableObject.CreateInstance(type), assetPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-                
+
             var loadedInstance = AssetDatabase.LoadAssetAtPath<ScriptableObject>(assetPath);
             Undo.RegisterCreatedObjectUndo(loadedInstance, "Create ScriptableObject");
             return loadedInstance;
@@ -100,6 +101,7 @@ namespace PhEngine.QuickDropdown.Editor
                 assetPath = $"{path}/{name}_{index}.asset";
                 index++;
             }
+
             return assetPath;
         }
 
@@ -112,15 +114,24 @@ namespace PhEngine.QuickDropdown.Editor
 
         public static Texture GetIconForType(Type type)
         {
-           if (type.IsSubclassOf(typeof(ScriptableObject)))
-               return GetScriptableObjectIcon();
-           if (type.IsSubclassOf(typeof(GameObject)) || type.IsSubclassOf(typeof(Component)) || type.IsSubclassOf(typeof(MonoBehaviour)))
-               return GetPrefabIcon();
+            if (type == typeof(string))
+                return null;
+            if (type.IsSubclassOf(typeof(ScriptableObject)))
+                return GetScriptableObjectIcon();
+            if (type.IsSubclassOf(typeof(GameObject)) || type.IsSubclassOf(typeof(Component)) ||
+                type.IsSubclassOf(typeof(MonoBehaviour)))
+                return GetPrefabIcon();
 
-           var typeName = type.Name;
-           var commonAssetTypes = new string[] { "Sprite" , "AudioClip", "Texture", "Texture2D", "Material" , "TextAsset", "VideoClip", "AnimationClip", "Mesh", "Animator", "AnimatorController" , "AnimatorOverrideController", "Avatar"};
-           var mightBeCommonAssetType = commonAssetTypes.Contains(typeName) ? EditorGUIUtility.IconContent(typeName + " Icon").image : null;
-           return mightBeCommonAssetType != null ? mightBeCommonAssetType : GetObjectIcon();
+            var typeName = type.Name;
+            var commonAssetTypes = new string[]
+            {
+                "Sprite", "AudioClip", "Texture", "Texture2D", "Material", "TextAsset", "VideoClip", "AnimationClip",
+                "Mesh", "Animator", "AnimatorController", "AnimatorOverrideController", "Avatar"
+            };
+            var mightBeCommonAssetType = commonAssetTypes.Contains(typeName)
+                ? EditorGUIUtility.IconContent(typeName + " Icon").image
+                : null;
+            return mightBeCommonAssetType != null ? mightBeCommonAssetType : GetObjectIcon();
         }
 
         public static Object LoadAssetAtPath(string path, Type type)

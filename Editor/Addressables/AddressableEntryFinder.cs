@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using Object = UnityEngine.Object;
 
 namespace PhEngine.QuickDropdown.Editor.Addressables
@@ -21,7 +20,7 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
 
         public override bool IsTypeSupported(Type type)
         {
-            return base.IsTypeSupported(type) || type == typeof(string) || type == typeof(AssetReference) || type == typeof(AssetReferenceT<>);
+            return base.IsTypeSupported(type) || type == typeof(string);
         }
 
         public override string[] SearchForItems()
@@ -67,9 +66,13 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
             return unsafeAddressableIcon;
         }
 
-        public override bool IsBelongToSource(Object currentObject)
+        public override bool IsBelongToSource(object currentObject)
         {
-            return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(currentObject, out var guid, out _) 
+            var targetObject = currentObject as Object;
+            if (currentObject is string address)
+                return group.entries.Any(e => e.address == address);   
+            
+            return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(targetObject, out var guid, out _) 
                    && group.entries.Any(e => e.guid == guid);
         }
 

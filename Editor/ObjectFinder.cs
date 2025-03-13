@@ -27,7 +27,7 @@ namespace PhEngine.QuickDropdown.Editor
         public abstract void SelectAndPingSource();
         public abstract void CreateNewScriptableObject();
         public abstract Texture GetSourceIcon();
-        public abstract bool IsBelongToSource(Object currentObject);
+        public abstract bool IsBelongToSource(object currentObject);
         public abstract bool CheckAndPrepareSource();
         public abstract void CreateSourceIfNotExists();
     }

@@ -5,7 +5,9 @@ using UnityEngine;
 public class AddressableDropdownExample : MonoBehaviour
 {
     [FromAddressable("PackedAddressableGroup"), SerializeField]
-    ElementConfig addressableElementConfig;
-
+    ElementConfig addressableConfig;
+    
+    [FromAddressable("PackedAddressableGroup"), SerializeField]
+    string addressableAddress;
 }
 #endif

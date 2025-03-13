@@ -47,9 +47,9 @@ namespace PhEngine.QuickDropdown.Editor
             return QuickDropdownEditorUtils.GetScriptableObjectIcon();
         }
 
-        public override bool IsBelongToSource(Object currentObject)
+        public override bool IsBelongToSource(object currentObject)
         {
-            return container.ContainsObject(currentObject);
+            return container.ContainsObject(currentObject as Object);
         }
 
         public override bool CheckAndPrepareSource()

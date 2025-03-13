@@ -59,9 +59,9 @@ namespace PhEngine.QuickDropdown.Editor
             return QuickDropdownEditorUtils.GetFolderIcon();
         }
 
-        public override bool IsBelongToSource(Object currentObject)
+        public override bool IsBelongToSource(object currentObject)
         {
-            var path = QuickDropdownEditorUtils.GetAssetPath(currentObject);
+            var path = QuickDropdownEditorUtils.GetAssetPath(currentObject as Object);
             return path != null && pathResults.Any(r => r.assetPath == path);
         }
 

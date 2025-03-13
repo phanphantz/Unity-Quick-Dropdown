@@ -1,7 +1,9 @@
 {
     "name": "PhEngine.QuickDropdown",
     "rootNamespace": "PhEngine",
-    "references": [],
+    "references": [
+        "Unity.Addressables"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
