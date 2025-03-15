@@ -70,7 +70,10 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override bool CheckAndPrepareSource()
         {
-            if (CachedFolderList.Contains(AssetPath)|| AssetDatabase.IsValidFolder(AssetPath))
+            if (CachedFolderList.Contains(AssetPath))
+                return true;
+            
+            if (AssetDatabase.IsValidFolder(AssetPath))
             {
                 CachedFolderList.Add(AssetPath);
                 return true;

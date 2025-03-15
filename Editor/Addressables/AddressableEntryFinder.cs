@@ -1,5 +1,6 @@
 ﻿#if ADDRESSABLES_DROPDOWN
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -12,6 +13,8 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
     public class AddressableEntryFinder : ObjectFinder
     {
         AddressableAssetGroup group;
+        
+        static readonly Dictionary<string, AddressableAssetGroup> CachedGroups = new Dictionary<string, AddressableAssetGroup>();
         
         static Texture unsafeAddressableIcon;
         public AddressableEntryFinder(DropdownField field, Type type) : base(field, type)
@@ -78,7 +81,15 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
 
         public override bool CheckAndPrepareSource()
         {
+            if (CachedGroups.TryGetValue(ObjectPath, out group) && group != null)
+                return true;
+            
             group = AddressableUtils.GetFirstFoundGroup(ObjectPath);
+            if (group != null)
+            {
+                if (CachedGroups.TryAdd(ObjectPath, group))
+                    CachedGroups[ObjectPath] = group;
+            }
             return group;
         }
 
