@@ -124,8 +124,8 @@ namespace PhEngine.QuickDropdown.Editor
                 allButtonWidth += buttonWidth;
 
             Rect remainingRect = EditorGUI.PrefixLabel(Position, Label);
-            if (GUI.Button(new Rect(remainingRect.x, Position.y, remainingRect.width, EditorGUIUtility.singleLineHeight),
-                    Label, EditorStyles.popup))
+            if (GUI.Button(new Rect(remainingRect.x, Position.y, remainingRect.width - allButtonWidth, EditorGUIUtility.singleLineHeight),
+                   GetCurrentItemName(), EditorStyles.popup))
             {
                 if (!DrawDropdown(allButtonWidth))
                     return false;
@@ -140,6 +140,18 @@ namespace PhEngine.QuickDropdown.Editor
             return true;
         }
 
+        GUIContent GetCurrentItemName()
+        {
+            return IsUnityObject ? 
+                (Property.objectReferenceValue ? 
+                    new GUIContent(Property.objectReferenceValue.name, IconUtils.GetIconForType(Type)) : GetNullItemContent()) : new GUIContent(Property.stringValue);
+        }
+
+        static GUIContent GetNullItemContent()
+        {
+            return new GUIContent("NULL", IconUtils.GetWarningIcon());
+        }
+
         bool DrawDropdown(float allButtonWidth)
         {
             var results = Finder.SearchForItems();
@@ -147,13 +159,8 @@ namespace PhEngine.QuickDropdown.Editor
                 .Select(result => result.Split('/').LastOrDefault())
                 .ToArray();
             
-            var currentIndex = -1;
-            var indexSearchResult = FindCurrentIndexResult(currentIndex, objectNames);
-            if (!indexSearchResult.isValid)
-                return false;
-
-            currentIndex = indexSearchResult.index;
-            var baseOptions = new[] { new GUIContent("NULL", IconUtils.GetWarningIcon()) };
+            var currentIndex = FindCurrentIndex(objectNames);
+            var baseOptions = new[] { GetNullItemContent() };
             var icon = IconUtils.GetIconForType(Type);
             var options = baseOptions
                 .Concat(results.Select(s => new GUIContent(s, icon)))
@@ -180,8 +187,9 @@ namespace PhEngine.QuickDropdown.Editor
             return true;
         }
 
-        (bool isValid, int index) FindCurrentIndexResult(int currentIndex, string[] objectNames)
+        int FindCurrentIndex(string[] objectNames)
         {
+            var currentIndex = -1;
             Object currentObject = null;
             string rawAddress = "";
             if (IsUnityObject)
@@ -206,11 +214,10 @@ namespace PhEngine.QuickDropdown.Editor
             currentIndex++;
             if (currentIndex == 0 && currentObject)
             {
-                DrawFallbackField("This Object does not belong to path: " + Path);
-                return (false, -1);
+                Debug.LogWarning($"The Object '{currentObject.name}' does not belong to path: {Path}");
+                return -1;
             }
-
-            return (true, currentIndex);
+            return currentIndex;
         }
 
         void ApplyChangeToProperty(Object targetObject)
