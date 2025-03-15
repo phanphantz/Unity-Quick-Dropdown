@@ -127,7 +127,7 @@ namespace PhEngine.QuickDropdown.Editor
             if (GUI.Button(new Rect(remainingRect.x, Position.y, remainingRect.width - allButtonWidth, EditorGUIUtility.singleLineHeight),
                    GetCurrentItemName(), EditorStyles.popup))
             {
-                if (!DrawDropdown(allButtonWidth))
+                if (!DrawDropdown(remainingRect.x,remainingRect.width - allButtonWidth))
                     return false;
             }
 
@@ -152,7 +152,7 @@ namespace PhEngine.QuickDropdown.Editor
             return new GUIContent("NULL", IconUtils.GetWarningIcon());
         }
 
-        bool DrawDropdown(float allButtonWidth)
+        bool DrawDropdown(float positionX, float width)
         {
             var results = Finder.SearchForItems();
             var objectNames = results
@@ -168,8 +168,8 @@ namespace PhEngine.QuickDropdown.Editor
             
             //Draw the dropdown popup
             PopupWindow.Show(
-                new Rect(Position.x, Position.y + EditorGUIUtility.singleLineHeight, Position.width - allButtonWidth, 0),
-                new CustomDropdownPopup(options, Position.width - allButtonWidth, currentIndex,selectedIndex =>
+                new Rect(positionX, Position.y + EditorGUIUtility.singleLineHeight, width, 0),
+                new CustomDropdownPopup(options, width, currentIndex,selectedIndex =>
                 {
                     if (selectedIndex == currentIndex) 
                         return;

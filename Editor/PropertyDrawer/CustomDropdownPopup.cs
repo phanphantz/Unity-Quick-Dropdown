@@ -12,6 +12,7 @@ namespace PhEngine.QuickDropdown.Editor
 
         int currentIndex;
         float width;
+        GUIStyle itemStyle;
 
         public CustomDropdownPopup(GUIContent[] options, float width, int currentIndex, Action<int> onSelect)
         {
@@ -19,11 +20,14 @@ namespace PhEngine.QuickDropdown.Editor
             this.onSelect = onSelect;
             this.currentIndex = currentIndex;
             this.width = width;
+            
+            itemStyle = new GUIStyle(EditorStyles.helpBox);
+            itemStyle.alignment = TextAnchor.MiddleLeft;
         }
 
         public override Vector2 GetWindowSize()
         {
-            return new Vector2(width, Mathf.Min(5000, options.Length * EditorGUIUtility.singleLineHeight));
+            return new Vector2(width, Mathf.Min(5000, (options.Length + 1) * EditorGUIUtility.singleLineHeight));
         }
 
         public override void OnGUI(Rect rect)
@@ -40,7 +44,7 @@ namespace PhEngine.QuickDropdown.Editor
             for (int i = 0; i < options.Length; i++)
             {
                 GUI.color = i == currentIndex ? Color.green : oldColor;
-                if (GUILayout.Button(options[i], GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+                if (GUILayout.Button(options[i], itemStyle,GUILayout.Height(EditorGUIUtility.singleLineHeight)))
                 {
                     onSelect?.Invoke(i); // Invoke the callback with the selected option
                     editorWindow.Close(); // Close the popup after selection
