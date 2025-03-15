@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -13,8 +12,6 @@ namespace PhEngine.QuickDropdown.Editor
         AssetFileResult[] pathResults;
         string AssetPath { get; }
         
-        static readonly HashSet<string> CachedFolderList = new HashSet<string>();
-
         public FolderObjectFinder(DropdownField field, Type type) : base(field, type)
         {
             AssetPath = ObjectPath.StartsWith("Assets/") ? ObjectPath : "Assets/" + ObjectPath;
@@ -39,13 +36,9 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override void SelectAndPingSource()
         {
-            var folderAsset = AssetUtils.LoadAssetAtPath(AssetPath, typeof(Object));
-            if (folderAsset != null)
-            {
-                EditorUtility.FocusProjectWindow();
-                Selection.activeObject = folderAsset;
-                EditorApplication.delayCall += () => { EditorApplication.ExecuteMenuItem("Assets/Open"); };
-            }
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = CachedSource;
+            EditorApplication.delayCall += () => { EditorApplication.ExecuteMenuItem("Assets/Open"); };
         }
 
         public override void CreateNewScriptableObject()
@@ -53,7 +46,7 @@ namespace PhEngine.QuickDropdown.Editor
             if (string.IsNullOrEmpty(AssetPath))
                 throw new InvalidOperationException("Directory path is empty.");
             
-            CreateSourceIfNotExists();
+            CreateNewSource();
             AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, AssetPath);
         }
 
@@ -68,27 +61,19 @@ namespace PhEngine.QuickDropdown.Editor
             return path != null && pathResults.Any(r => r.assetPath == path);
         }
 
-        public override bool CheckAndPrepareSource()
+        protected override Object SearchForSource()
         {
-            if (CachedFolderList.Contains(AssetPath))
-                return true;
+            if (!Directory.Exists(AssetPath))
+                return null;
             
-            if (AssetDatabase.IsValidFolder(AssetPath))
-            {
-                CachedFolderList.Add(AssetPath);
-                return true;
-            }
-
-            return false;
+            return AssetUtils.LoadAssetAtPath(AssetPath, typeof(Object));
         }
 
-        public override void CreateSourceIfNotExists()
+        protected override Object CreateNewSource()
         {
-            if (AssetDatabase.IsValidFolder(AssetPath))
-                return;
-            
             Directory.CreateDirectory(AssetPath);
             AssetDatabase.Refresh();
+            return SearchForSource();
         }
         
         static AssetFileResult[] FindInFolder(string typeName, string folderPath)

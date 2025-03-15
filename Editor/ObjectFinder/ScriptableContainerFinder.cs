@@ -8,7 +8,7 @@ namespace PhEngine.QuickDropdown.Editor
 {
     public abstract class ScriptableContainerFinder : ObjectFinder
     {
-        protected ScriptableContainer Container;
+        ScriptableContainer Container => CachedSource as ScriptableContainer;
         protected ScriptableContainerFinder(DropdownField field, Type type) : base(field, type)
         {
         }
@@ -17,8 +17,7 @@ namespace PhEngine.QuickDropdown.Editor
         {
             return Container ? Container.GetStringOptions(Type) : new string[] { };
         }
-
-        protected abstract ScriptableContainer FindContainer(string name);
+        
         public override Object GetResultAtIndex(int index)
         {
             return Container.GetObjectFromFlatTree(Type, index);
@@ -33,7 +32,7 @@ namespace PhEngine.QuickDropdown.Editor
         {
             Undo.IncrementCurrentGroup();
             var undoId = Undo.GetCurrentGroup();
-            CreateSourceIfNotExists();
+            CreateNewSource();
             var groupPath = AssetUtils.GetAssetPath(Container);
             var newInstance = AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
             Undo.RegisterCompleteObjectUndo(Container, "Create new ScriptableObject");
@@ -52,17 +51,8 @@ namespace PhEngine.QuickDropdown.Editor
             return Container.ContainsObject(currentObject as Object);
         }
 
-        public override bool CheckAndPrepareSource()
+        protected override Object CreateNewSource()
         {
-            Container = FindContainer(ObjectPath);
-            return Container;
-        }
-
-        public override void CreateSourceIfNotExists()
-        {
-            if (Container) 
-                return;
-
             var groupPath = AssetUtils.GetDefaultAssetPath(ObjectPath);
             var directory = Path.GetDirectoryName(groupPath);
             if (string.IsNullOrEmpty(directory))
@@ -70,8 +60,8 @@ namespace PhEngine.QuickDropdown.Editor
                 
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
-
-            Container = CreateNewContainer(groupPath);
+            
+            return CreateNewContainer(groupPath);
         }
 
         protected abstract ScriptableContainer CreateNewContainer(string groupPath);

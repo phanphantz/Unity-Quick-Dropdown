@@ -68,7 +68,7 @@ namespace PhEngine.QuickDropdown.Editor
             }
 
             //Get ObjectFinder
-            Finder = ObjectFinderFactory.CreateFinder(Field, Type);
+            Finder = ObjectFinderFactory.GetFinder(Field, Type);
             if (!Finder.IsTypeSupported(Type))
             {
                 DrawFallbackField("This type is not supported by the attribute " + Field.GetType().Name);
@@ -250,16 +250,21 @@ namespace PhEngine.QuickDropdown.Editor
             var oldColor = GUI.color;
 
             GUI.color = IsSourceValid ? LinkColor : Color.yellow;
-            if (GUI.Button(buttonRect, new GUIContent(Path), EditorStyles.miniLabel))
-                Finder.SelectAndPingSource();
+            if (GUI.Button(buttonRect, new GUIContent(Path, IsSourceValid ? "Click to search for the source again" : "Click to Jump to the source"), EditorStyles.miniLabel))
+            {
+                if (IsSourceValid)
+                    Finder.SelectAndPingSource();
+                else
+                    Finder.SearchAndCacheSource();
+            }
 
             if (!IsSourceValid)
             {
                 buttonRect.x += buttonRect.width;
-                buttonRect.width = 52f;
+                buttonRect.width = 30f;
                 GUI.color = oldColor;
-                if (GUI.Button(buttonRect, new GUIContent("Create"), EditorStyles.miniButton))
-                    Finder.CreateSourceIfNotExists();
+                if (GUI.Button(buttonRect, new GUIContent("Fix", "Search for a source with the specified name or Create it if not found."), EditorStyles.miniButton))
+                    Finder.CreateOrGetSourceFromInspector();
             }
 
             GUI.color = oldColor;

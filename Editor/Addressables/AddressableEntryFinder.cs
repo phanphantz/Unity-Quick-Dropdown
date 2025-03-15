@@ -1,6 +1,5 @@
 ﻿#if ADDRESSABLES_DROPDOWN
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -12,10 +11,7 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
 {
     public class AddressableEntryFinder : ObjectFinder
     {
-        AddressableAssetGroup group;
-        
-        static readonly Dictionary<string, AddressableAssetGroup> CachedGroups = new Dictionary<string, AddressableAssetGroup>();
-        
+        AddressableAssetGroup Group => CachedSource as AddressableAssetGroup;
         static Texture unsafeAddressableIcon;
         public AddressableEntryFinder(DropdownField field, Type type) : base(field, type)
         {
@@ -28,20 +24,20 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
 
         public override string[] SearchForItems()
         {
-            return group.entries.Select(e => e.address).ToArray();
+            return Group.entries.Select(e => e.address).ToArray();
         }
 
         public override Object GetResultAtIndex(int index)
         {
-            var entry = group.entries.ElementAt(index);
+            var entry = Group.entries.ElementAt(index);
             var path = AssetDatabase.GUIDToAssetPath(entry.guid);
             return AssetDatabase.LoadAssetAtPath<Object>(path);
         }
 
         public override void SelectAndPingSource()
         {
-            Selection.activeObject = group;
-            EditorGUIUtility.PingObject(group);
+            Selection.activeObject = Group;
+            EditorGUIUtility.PingObject(Group);
         }
 
         public override void CreateNewScriptableObject()
@@ -73,29 +69,20 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
         {
             var targetObject = currentObject as Object;
             if (currentObject is string address)
-                return group.entries.Any(e => e.address == address);   
+                return Group.entries.Any(e => e.address == address);   
             
             return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(targetObject, out var guid, out _) 
-                   && group.entries.Any(e => e.guid == guid);
+                   && Group.entries.Any(e => e.guid == guid);
         }
 
-        public override bool CheckAndPrepareSource()
+        protected override Object SearchForSource()
         {
-            if (CachedGroups.TryGetValue(ObjectPath, out group) && group != null)
-                return true;
-            
-            group = AddressableUtils.GetFirstFoundGroup(ObjectPath);
-            if (group != null)
-            {
-                if (CachedGroups.TryAdd(ObjectPath, group))
-                    CachedGroups[ObjectPath] = group;
-            }
-            return group;
+            return AddressableUtils.GetFirstFoundGroup(ObjectPath);
         }
 
-        public override void CreateSourceIfNotExists()
+        protected override Object CreateNewSource()
         {
-            AddressableUtils.GetOrCreateGroup(ObjectPath);
+            return AddressableUtils.GetOrCreateGroup(ObjectPath);
         }
     }
 }
