@@ -7,14 +7,14 @@ namespace PhEngine.QuickDropdown.Editor
 {
     public class ScriptableGroupFinder : ScriptableContainerFinder
     {
-        static Dictionary<string, ScriptableGroup> cachedGroups = new Dictionary<string, ScriptableGroup>();
+        static readonly Dictionary<string, ScriptableGroup> CachedGroups = new Dictionary<string, ScriptableGroup>();
         public ScriptableGroupFinder(DropdownField field, Type type) : base(field, type)
         {
         }
 
-        public override ScriptableContainer FindContainer(string name)
+        protected override ScriptableContainer FindContainer(string name)
         {
-            if (cachedGroups.TryGetValue(name, out var result) && result != null)
+            if (CachedGroups.TryGetValue(name, out var result) && result != null)
                 return result;
             
             result = AssetDatabase
@@ -24,8 +24,8 @@ namespace PhEngine.QuickDropdown.Editor
 
             if (result)
             {
-                if (!cachedGroups.TryAdd(name, result))
-                    cachedGroups[name] = result;
+                if (!CachedGroups.TryAdd(name, result))
+                    CachedGroups[name] = result;
             }
             
             return result;
@@ -33,7 +33,7 @@ namespace PhEngine.QuickDropdown.Editor
 
         protected override ScriptableContainer CreateNewContainer(string groupPath)
         {
-            return QuickDropdownEditorUtils.CreateScriptableObject(typeof(ScriptableGroup), groupPath) as ScriptableGroup;
+            return AssetUtils.CreateScriptableObject(typeof(ScriptableGroup), groupPath) as ScriptableGroup;
         }
     }
 }

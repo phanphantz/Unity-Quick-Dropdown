@@ -6,9 +6,9 @@ namespace PhEngine.QuickDropdown.Editor
 {
     public abstract class ObjectFinder
     {
-        public string ObjectPath { get; }
-        public DropdownField Field { get; }
-        public Type Type { get; }
+        protected string ObjectPath { get; }
+        protected DropdownField Field { get; }
+        protected Type Type { get; }
 
         protected ObjectFinder(DropdownField field, Type type)
         {

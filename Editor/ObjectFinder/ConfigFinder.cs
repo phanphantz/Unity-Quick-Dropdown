@@ -14,8 +14,8 @@ namespace PhEngine.QuickDropdown.Editor
         public ConfigFinder(DropdownField field, Type type) : base(field, type)
         {
         }
-        
-        public override ScriptableContainer FindContainer(string name)
+
+        protected override ScriptableContainer FindContainer(string name)
         {
             return Container;
         }
@@ -46,7 +46,7 @@ namespace PhEngine.QuickDropdown.Editor
 
         protected override ScriptableContainer CreateNewContainer(string groupPath)
         {
-            return QuickDropdownEditorUtils.CreateScriptableObject(FromConfig.ConfigType, groupPath) as ScriptableContainer;
+            return AssetUtils.CreateScriptableObject(FromConfig.ConfigType, groupPath) as ScriptableContainer;
         }
     }
 }

@@ -52,7 +52,7 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
             
             Undo.IncrementCurrentGroup();
             var id = Undo.GetCurrentGroup();
-            var createdItem = QuickDropdownEditorUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, folderPath);
+            var createdItem = AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, folderPath);
             var actualPath = AssetDatabase.GetAssetPath(createdItem);
             AddressableUtils.AddToAddressableGroup(AssetDatabase.AssetPathToGUID(actualPath), ObjectPath, createdItem.name);
             Undo.CollapseUndoOperations(id);

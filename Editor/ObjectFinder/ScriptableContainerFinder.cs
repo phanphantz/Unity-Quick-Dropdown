@@ -18,7 +18,7 @@ namespace PhEngine.QuickDropdown.Editor
             return Container ? Container.GetStringOptions(Type) : new string[] { };
         }
 
-        public abstract ScriptableContainer FindContainer(string name);
+        protected abstract ScriptableContainer FindContainer(string name);
         public override Object GetResultAtIndex(int index)
         {
             return Container.GetObjectFromFlatTree(Type, index);
@@ -26,7 +26,7 @@ namespace PhEngine.QuickDropdown.Editor
         
         public override void SelectAndPingSource()
         {
-            QuickDropdownEditorUtils.SelectAndPingInProjectTab(Container);
+            AssetUtils.SelectAndPingInProjectTab(Container);
         }
 
         public override void CreateNewScriptableObject()
@@ -34,8 +34,8 @@ namespace PhEngine.QuickDropdown.Editor
             Undo.IncrementCurrentGroup();
             var undoId = Undo.GetCurrentGroup();
             CreateSourceIfNotExists();
-            var groupPath = QuickDropdownEditorUtils.GetAssetPath(Container);
-            var newInstance = QuickDropdownEditorUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
+            var groupPath = AssetUtils.GetAssetPath(Container);
+            var newInstance = AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
             Undo.RegisterCompleteObjectUndo(Container, "Create new ScriptableObject");
             Container.AddObject(newInstance);
             EditorUtility.SetDirty(Container);
@@ -44,7 +44,7 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override Texture GetSourceIcon()
         {
-            return QuickDropdownEditorUtils.GetScriptableObjectIcon();
+            return IconUtils.GetScriptableObjectIcon();
         }
 
         public override bool IsBelongToSource(object currentObject)
@@ -63,7 +63,7 @@ namespace PhEngine.QuickDropdown.Editor
             if (Container) 
                 return;
 
-            var groupPath = QuickDropdownEditorUtils.GetDefaultAssetPath(ObjectPath);
+            var groupPath = AssetUtils.GetDefaultAssetPath(ObjectPath);
             var directory = Path.GetDirectoryName(groupPath);
             if (string.IsNullOrEmpty(directory))
                 throw new InvalidOperationException("Directory path is empty.");

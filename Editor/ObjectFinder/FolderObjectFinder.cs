@@ -13,7 +13,7 @@ namespace PhEngine.QuickDropdown.Editor
         AssetFileResult[] pathResults;
         string AssetPath { get; }
         
-        static HashSet<string> folderList = new HashSet<string>();
+        static readonly HashSet<string> CachedFolderList = new HashSet<string>();
 
         public FolderObjectFinder(DropdownField field, Type type) : base(field, type)
         {
@@ -22,7 +22,7 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override string[] SearchForItems()
         {
-            pathResults = QuickDropdownEditorUtils.FindInFolder(Type.Name, AssetPath);
+            pathResults = FindInFolder(Type.Name, AssetPath);
             return pathResults.Select(r =>
             {
                 var path = r.assetPath.Replace(AssetPath, "").Split('.')[0];
@@ -34,12 +34,12 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override Object GetResultAtIndex(int index)
         {
-            return QuickDropdownEditorUtils.LoadAssetAtPath(pathResults[index].assetPath, Type);
+            return AssetUtils.LoadAssetAtPath(pathResults[index].assetPath, Type);
         }
 
         public override void SelectAndPingSource()
         {
-            var folderAsset = QuickDropdownEditorUtils.LoadAssetAtPath(AssetPath, typeof(Object));
+            var folderAsset = AssetUtils.LoadAssetAtPath(AssetPath, typeof(Object));
             if (folderAsset != null)
             {
                 EditorUtility.FocusProjectWindow();
@@ -54,25 +54,25 @@ namespace PhEngine.QuickDropdown.Editor
                 throw new InvalidOperationException("Directory path is empty.");
             
             CreateSourceIfNotExists();
-            QuickDropdownEditorUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, AssetPath);
+            AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, AssetPath);
         }
 
         public override Texture GetSourceIcon()
         {
-            return QuickDropdownEditorUtils.GetFolderIcon();
+            return IconUtils.GetFolderIcon();
         }
 
         public override bool IsBelongToSource(object currentObject)
         {
-            var path = QuickDropdownEditorUtils.GetAssetPath(currentObject as Object);
+            var path = AssetUtils.GetAssetPath(currentObject as Object);
             return path != null && pathResults.Any(r => r.assetPath == path);
         }
 
         public override bool CheckAndPrepareSource()
         {
-            if (folderList.Contains(AssetPath)|| AssetDatabase.IsValidFolder(AssetPath))
+            if (CachedFolderList.Contains(AssetPath)|| AssetDatabase.IsValidFolder(AssetPath))
             {
-                folderList.Add(AssetPath);
+                CachedFolderList.Add(AssetPath);
                 return true;
             }
 
@@ -81,11 +81,21 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override void CreateSourceIfNotExists()
         {
-            if (!AssetDatabase.IsValidFolder(AssetPath))
-            {
-                Directory.CreateDirectory(AssetPath);
-                AssetDatabase.Refresh();
-            }
+            if (AssetDatabase.IsValidFolder(AssetPath))
+                return;
+            
+            Directory.CreateDirectory(AssetPath);
+            AssetDatabase.Refresh();
+        }
+        
+        static AssetFileResult[] FindInFolder(string typeName, string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                return new AssetFileResult[] { };
+
+            return AssetDatabase.FindAssets("t:" + typeName, new[] {folderPath})
+                .Select(guid => new AssetFileResult(AssetDatabase.GUIDToAssetPath(guid)))
+                .ToArray();
         }
     }
 }
