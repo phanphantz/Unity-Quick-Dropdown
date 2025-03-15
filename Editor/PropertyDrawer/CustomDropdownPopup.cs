@@ -11,17 +11,19 @@ namespace PhEngine.QuickDropdown.Editor
         Vector2 scrollPosition;
 
         int currentIndex;
+        float width;
 
-        public CustomDropdownPopup(GUIContent[] options, int currentIndex, Action<int> onSelect)
+        public CustomDropdownPopup(GUIContent[] options, float width, int currentIndex, Action<int> onSelect)
         {
             this.options = options;
             this.onSelect = onSelect;
             this.currentIndex = currentIndex;
+            this.width = width;
         }
 
         public override Vector2 GetWindowSize()
         {
-            return new Vector2(200, Mathf.Min(300, options.Length * EditorGUIUtility.singleLineHeight));
+            return new Vector2(width, Mathf.Min(5000, options.Length * EditorGUIUtility.singleLineHeight));
         }
 
         public override void OnGUI(Rect rect)

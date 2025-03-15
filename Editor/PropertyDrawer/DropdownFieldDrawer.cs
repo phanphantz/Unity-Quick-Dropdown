@@ -123,8 +123,8 @@ namespace PhEngine.QuickDropdown.Editor
             if (isShouldDrawInspectButton)
                 allButtonWidth += buttonWidth;
 
-            EditorGUI.PrefixLabel(Position, Label);
-            if (GUI.Button(new Rect(Position.x, Position.y, Position.width, EditorGUIUtility.singleLineHeight),
+            Rect remainingRect = EditorGUI.PrefixLabel(Position, Label);
+            if (GUI.Button(new Rect(remainingRect.x, Position.y, remainingRect.width, EditorGUIUtility.singleLineHeight),
                     Label, EditorStyles.popup))
             {
                 if (!DrawDropdown(allButtonWidth))
@@ -162,7 +162,7 @@ namespace PhEngine.QuickDropdown.Editor
             //Draw the dropdown popup
             PopupWindow.Show(
                 new Rect(Position.x, Position.y + EditorGUIUtility.singleLineHeight, Position.width - allButtonWidth, 0),
-                new CustomDropdownPopup(options, currentIndex,selectedIndex =>
+                new CustomDropdownPopup(options, Position.width - allButtonWidth, currentIndex,selectedIndex =>
                 {
                     if (selectedIndex == currentIndex) 
                         return;
