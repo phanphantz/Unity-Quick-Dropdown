@@ -25,7 +25,6 @@ namespace PhEngine.QuickDropdown.Editor
 
         public static void SelectAndPingInProjectTab(Object obj)
         {
-            EditorUtility.FocusProjectWindow();
             Selection.activeObject = obj;
             EditorGUIUtility.PingObject(obj);
         }

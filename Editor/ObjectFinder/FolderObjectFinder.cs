@@ -41,7 +41,6 @@ namespace PhEngine.QuickDropdown.Editor
 
         public override void SelectAndPingSource()
         {
-            EditorUtility.FocusProjectWindow();
             Selection.activeObject = CachedSource;
             EditorApplication.delayCall += () => { EditorApplication.ExecuteMenuItem("Assets/Open"); };
         }
