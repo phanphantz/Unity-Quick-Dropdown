@@ -85,7 +85,8 @@ namespace PhEngine.QuickDropdown.Editor
             }
             else
             {
-                DrawContent();
+                if (!TryDrawContent())
+                    return;
             }
 
             if (!Field.IsHideInfo)
@@ -97,22 +98,25 @@ namespace PhEngine.QuickDropdown.Editor
             var rect = Position;
             rect.height = EditorGUIUtility.singleLineHeight;
             EditorGUI.PropertyField(rect, Property, Label);
+#if QDD_DEDUG
+            Debug.Log("Draw Default field");
+#endif
         }
 
         void DrawFallbackField(string reason)
         {
             var oldColor = GUI.color;
             GUI.color = ErrorColor;
+            DrawDefaultField();
             if (Field is { IsHideInfo: false })
             {
-                DrawDefaultField();
                 GUI.Label(DetailRect, reason, EditorStyles.miniLabel);
             }
 
             GUI.color = oldColor;
         }
 
-        void DrawContent()
+        bool TryDrawContent()
         {
             var isShouldDrawCreateButton = Type.IsSubclassOf(typeof(ScriptableObject)) && !Field.IsHideCreateSOButton;
             var isShouldDrawInspectButton = !Field.IsHideInspectButton && IsUnityObject;
@@ -135,7 +139,11 @@ namespace PhEngine.QuickDropdown.Editor
             var dimmedColor = oldColor;
             dimmedColor.a = 0.8f;
             GUI.color = isFocused ? oldColor : dimmedColor;
-            DrawDropdown(remainingRect);
+            if (!TryDrawDropdown(remainingRect))
+            {
+                GUI.color = oldColor;
+                return false;
+            }
             GUI.color = oldColor;
 
             if (isShouldDrawInspectButton)
@@ -143,11 +151,15 @@ namespace PhEngine.QuickDropdown.Editor
 
             if (isShouldDrawCreateButton)
                 DrawCreateButton(allButtonWidth, buttonWidth);
+
+            return true;
         }
 
         void PrepareSearchResults()
         {
-            Debug.Log("Building Options for Dropdown");
+#if QDD_DEDUG
+            Debug.Log($"[{Field.GetType().Name}] Build Options for Dropdown");
+#endif
             var results = Finder.SearchForItems();
             objectNames = results
                 .Select(result => result.Split('/').LastOrDefault())
@@ -160,36 +172,47 @@ namespace PhEngine.QuickDropdown.Editor
                 .ToArray();
         }
 
-        GUIContent GetCurrentItemName()
-        {
-            return IsUnityObject
-                ? (Property.objectReferenceValue
-                    ? new GUIContent(Property.objectReferenceValue.name, IconUtils.GetIconForType(Type))
-                    : GetNullItemContent())
-                : new GUIContent(Property.stringValue);
-        }
-
         static GUIContent GetNullItemContent()
         {
             return new GUIContent("NULL", IconUtils.GetWarningIcon());
         }
 
-        void DrawDropdown(Rect rect)
+        bool TryDrawDropdown(Rect rect)
         {
+            Object currentObject = null;
+            string rawAddress = "";
+            if (IsUnityObject)
+            {
+                currentObject = Property.objectReferenceValue;
+            }
+            else if (Type == typeof(string))
+            {
+                rawAddress = Property.stringValue;
+            }
+            
+            //Recheck if the object reference really belong to source
+            if ((IsUnityObject ? currentObject : !string.IsNullOrEmpty(rawAddress)) && !Finder.IsBelongToSource(IsUnityObject ? currentObject : rawAddress))
+            {
+                DrawFallbackField($"The Object does not belong to path: {Path}");
+                return false;
+            }
+            
             var currentIndex = FindCurrentIndex();
             var selectedIndex = EditorGUI.Popup(rect, currentIndex, options);
-            if (selectedIndex != currentIndex)
+            if (selectedIndex == currentIndex) 
+                return true;
+            
+            if (selectedIndex != 0)
             {
-                if (selectedIndex != 0)
-                {
-                    var targetObject = Finder.GetResultAtIndex(selectedIndex - 1);
-                    ApplyChangeToProperty(targetObject);
-                }
-                else
-                {
-                    ApplyChangeToProperty(null);
-                }
+                var targetObject = Finder.GetResultAtIndex(selectedIndex - 1);
+                ApplyChangeToProperty(targetObject);
             }
+            else
+            {
+                ApplyChangeToProperty(null);
+            }
+
+            return true;
         }
         
         int FindCurrentIndex()
@@ -209,19 +232,10 @@ namespace PhEngine.QuickDropdown.Editor
             if (currentObject || !string.IsNullOrEmpty(rawAddress))
             {
                 index = Array.IndexOf(objectNames, IsUnityObject && currentObject ? currentObject.name : rawAddress);
-                //Recheck if the object reference really belong to source
-                if (index != -1 && !Finder.IsBelongToSource(IsUnityObject ? currentObject : rawAddress))
-                    index = -1;
             }
 
             //Index 0 is NULL option
             index++;
-            if (index == 0 && currentObject)
-            {
-                Debug.LogWarning($"The Object '{currentObject.name}' does not belong to path: {Path}");
-                return -1;
-            }
-
             return index;
         }
 

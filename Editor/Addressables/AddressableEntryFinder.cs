@@ -69,7 +69,12 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
         {
             var targetObject = currentObject as Object;
             if (currentObject is string address)
+            {
                 return Group.entries.Any(e => e.address == address);   
+            }
+
+            if (targetObject == null)
+                return false;
             
             return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(targetObject, out var guid, out _) 
                    && Group.entries.Any(e => e.guid == guid);

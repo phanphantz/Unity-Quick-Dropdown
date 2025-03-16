@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace PhEngine.QuickDropdown.Editor
 {
@@ -50,6 +51,9 @@ namespace PhEngine.QuickDropdown.Editor
 
         public static void Dispose()
         {
+#if QDD_DEDUG
+            Debug.Log("Disposed all cached finders");
+#endif
             CachedFinders = new Dictionary<Type, Dictionary<string, ObjectFinder>>();
         }
     }
