@@ -14,6 +14,7 @@ namespace PhEngine.QuickDropdown.Editor
         int currentIndex;
         float width;
         GUIStyle itemStyle;
+        float lineHeight => EditorGUIUtility.singleLineHeight + 4;
 
         public CustomDropdownPopup(GUIContent[] options, float width, int currentIndex, Action<int> onSelect)
         {
@@ -24,6 +25,7 @@ namespace PhEngine.QuickDropdown.Editor
             
             itemStyle = new GUIStyle(EditorStyles.label)
             {
+                fixedHeight = lineHeight,
                 alignment = TextAnchor.MiddleLeft,
             };
         }
@@ -31,18 +33,17 @@ namespace PhEngine.QuickDropdown.Editor
         public override Vector2 GetWindowSize()
         {
             var optionCount = options.Length;
-            var height = (optionCount == 1 ? 1 : optionCount + 1) * EditorGUIUtility.singleLineHeight;
-            height += 3f;
+            if (optionCount == 0)
+                return Vector2.zero;
+            
+            var longestItem = options
+                .OrderByDescending(o => o.text.Length)
+                .FirstOrDefault();
 
-            if (optionCount > 0)
-            {
-                var longestItem = options
-                    .OrderByDescending(o => o.text.Length)
-                    .FirstOrDefault();
-
-                width = Mathf.Max(width, GUI.skin.label.CalcSize(longestItem).x);
-            }
-            return new Vector2(width, Mathf.Min(5000, height));
+            var longestSize = GUI.skin.label.CalcSize(longestItem);
+            width = Mathf.Max(width, longestSize.x);
+            var height = (optionCount * (lineHeight)) + (EditorGUIUtility.standardVerticalSpacing * (options.Length - 1));
+            return new Vector2(width, height);
         }
 
         public override void OnGUI(Rect rect)
@@ -57,19 +58,18 @@ namespace PhEngine.QuickDropdown.Editor
             {
                 var isSelected = i == currentIndex;
                 itemStyle.fontStyle = isSelected ? FontStyle.Bold : FontStyle.Normal;
-                if (GUILayout.Button(options[i], itemStyle,GUILayout.Height(EditorGUIUtility.singleLineHeight)))
+                if (GUILayout.Button(options[i], itemStyle,GUILayout.Height(lineHeight)))
                 {
                     onSelect?.Invoke(i); // Invoke the callback with the selected option
                     editorWindow.Close(); // Close the popup after selection
                 }
-                
                 if (isSelected)
                 {
                     GUIContent checkmarkContent = EditorGUIUtility.IconContent("d_FilterSelectedOnly@2x"); // This is one of the checkmark icons available in Unity. The name might change based on Unity version and skin.
         
                     // Calculate the position for the checkmark icon
                     Rect lastRect = GUILayoutUtility.GetLastRect(); // Gets the rect of the last drawn layout element, which in this case is the button.
-                    float checkmarkSize = EditorGUIUtility.singleLineHeight; // Use the single line height as the size for the checkmark for consistency.
+                    float checkmarkSize = lineHeight; // Use the single line height as the size for the checkmark for consistency.
                     Rect checkmarkRect = new Rect(lastRect.xMax - checkmarkSize, lastRect.y, checkmarkSize, checkmarkSize);
         
                     // Draw the checkmark icon at the end of the line
@@ -81,7 +81,7 @@ namespace PhEngine.QuickDropdown.Editor
                     Rect lastRect = GUILayoutUtility.GetLastRect();
                     float lineHeight = 1; // Thickness of the line
                     Rect lineRect = new Rect(lastRect.x, lastRect.yMax, lastRect.width, lineHeight);
-                    EditorGUI.DrawRect(lineRect, new Color(1,1,1,0.2f)); // Draw a grey line
+                    EditorGUI.DrawRect(lineRect, new Color(1,1,1,0.1f)); // Draw a grey line
                 }
             }
         }
