@@ -16,6 +16,11 @@ namespace PhEngine.QuickDropdown.Editor
         {
             AssetPath = ObjectPath.StartsWith("Assets/") ? ObjectPath : "Assets/" + ObjectPath;
         }
+        
+        protected override bool IsPathMatched()
+        {
+            return CachedSource.name == ObjectPath.Split('/').LastOrDefault();
+        }
 
         public override string[] SearchForItems()
         {
@@ -46,7 +51,9 @@ namespace PhEngine.QuickDropdown.Editor
             if (string.IsNullOrEmpty(AssetPath))
                 throw new InvalidOperationException("Directory path is empty.");
             
-            CreateNewSource();
+            if (CachedSource == null)
+                PrepareSource();
+            
             AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, AssetPath);
         }
 

@@ -32,7 +32,8 @@ namespace PhEngine.QuickDropdown.Editor
         {
             Undo.IncrementCurrentGroup();
             var undoId = Undo.GetCurrentGroup();
-            CreateNewSource();
+            if (Container == null)
+                PrepareSource();
             var groupPath = AssetUtils.GetAssetPath(Container);
             var newInstance = AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
             Undo.RegisterCompleteObjectUndo(Container, "Create new ScriptableObject");

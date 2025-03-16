@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace PhEngine.QuickDropdown.Editor
 {
-    [CustomPropertyDrawer(typeof(DropdownField))]
+    [CustomPropertyDrawer(typeof(DropdownField), true)]
     public class DropdownFieldDrawer : PropertyDrawer
     {
         static readonly Color LinkColor = new Color(0, 0.6f, 0.8f);

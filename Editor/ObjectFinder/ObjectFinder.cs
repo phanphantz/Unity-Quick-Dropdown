@@ -37,10 +37,10 @@ namespace PhEngine.QuickDropdown.Editor
         {
             if (CachedSource)
             {
-                if (CachedSource.name == ObjectPath)
+                if (IsPathMatched())
                     return true;
 
-                Debug.LogWarning($"The old source '{ObjectPath}' was renamed to '{CachedSource.name}'. Either Rename it back, Change the Path in code, or Click 'Fix' to create new source with the correct name.");
+                Debug.LogWarning($"The old source '{ObjectPath}' was renamed. Either Rename it back, Change the Path in code, or Click 'Fix' to create new source with the correct name.");
                 CachedSource = null;
                 return false;
             }
@@ -51,6 +51,11 @@ namespace PhEngine.QuickDropdown.Editor
             SearchAndCacheSource();
             wasSearchPerformed = true;
             return CachedSource;
+        }
+
+        protected virtual bool IsPathMatched()
+        {
+            return CachedSource.name == ObjectPath;
         }
 
         public void SearchAndCacheSource()
@@ -71,10 +76,15 @@ namespace PhEngine.QuickDropdown.Editor
                 return;
             }
             
-            CachedSource = CreateNewSource();
+            PrepareSource();
             Debug.Log($"[{GetType().Name}] Created a new source with name '{CachedSource.name}'");
         }
-        
+
+        protected void PrepareSource()
+        {
+            CachedSource = CreateNewSource();
+        }
+
         protected abstract Object CreateNewSource();
     }
 }
