@@ -7,21 +7,23 @@ namespace PhEngine.QuickDropdown.Editor
 {
     public class CustomDropdownPopup : PopupWindowContent
     {
-        GUIContent[] options; 
+        DropdownOption[] options; 
         Action<int> onSelect; 
         Vector2 scrollPosition;
 
         int currentIndex;
-        float width;
         GUIStyle itemStyle;
+        Texture icon;
+        Rect rect;
+        
         float lineHeight => EditorGUIUtility.singleLineHeight + 4;
 
-        public CustomDropdownPopup(GUIContent[] options, float width, int currentIndex, Action<int> onSelect)
+        public CustomDropdownPopup(Texture icon, DropdownOption[] options, int currentIndex, Action<int> onSelect)
         {
             this.options = options;
             this.onSelect = onSelect;
             this.currentIndex = currentIndex;
-            this.width = width;
+            this.icon = icon;
             
             itemStyle = new GUIStyle(EditorStyles.label)
             {
@@ -40,48 +42,63 @@ namespace PhEngine.QuickDropdown.Editor
                 .OrderByDescending(o => o.text.Length)
                 .FirstOrDefault();
 
-            var longestSize = GUI.skin.label.CalcSize(longestItem);
-            width = Mathf.Max(width, longestSize.x);
+            var longestSize = GUI.skin.label.CalcSize(new GUIContent(longestItem.text, icon));
             var height = (optionCount * (lineHeight)) + (EditorGUIUtility.standardVerticalSpacing * (options.Length - 1));
-            return new Vector2(width, height);
+            return new Vector2(longestSize.x, height);
         }
 
         public override void OnGUI(Rect rect)
         {
+            this.rect = rect;
             if (options == null || options.Length == 0)
             {
                 EditorGUILayout.LabelField("No options available.");
                 return;
             }
-            
+            DrawOptions(options);
+        }
+
+        void DrawOptions(DropdownOption[] options)
+        {
             for (int i = 0; i < options.Length; i++)
             {
                 var isSelected = i == currentIndex;
                 itemStyle.fontStyle = isSelected ? FontStyle.Bold : FontStyle.Normal;
-                if (GUILayout.Button(options[i], itemStyle,GUILayout.Height(lineHeight)))
+                var text = options[i].text;
+                
+                Texture itemIcon = null;
+                var isGroup = options[i].options.Count != 0;
+                if (!isGroup)
+                    itemIcon = text == "NULL" ? IconUtils.GetWarningIcon() : icon;
+                
+                if (GUILayout.Button(new GUIContent(text, itemIcon), itemStyle,GUILayout.Height(lineHeight)))
                 {
-                    onSelect?.Invoke(i); // Invoke the callback with the selected option
-                    editorWindow.Close(); // Close the popup after selection
-                }
-                if (isSelected)
-                {
-                    GUIContent checkmarkContent = EditorGUIUtility.IconContent("d_FilterSelectedOnly@2x"); // This is one of the checkmark icons available in Unity. The name might change based on Unity version and skin.
-        
-                    // Calculate the position for the checkmark icon
-                    Rect lastRect = GUILayoutUtility.GetLastRect(); // Gets the rect of the last drawn layout element, which in this case is the button.
-                    float checkmarkSize = lineHeight; // Use the single line height as the size for the checkmark for consistency.
-                    Rect checkmarkRect = new Rect(lastRect.xMax - checkmarkSize, lastRect.y, checkmarkSize, checkmarkSize);
-        
-                    // Draw the checkmark icon at the end of the line
-                    GUI.Label(checkmarkRect, checkmarkContent);
+                    if (isGroup)
+                    {
+                        PopupWindow.Show(GUILayoutUtility.GetLastRect(), new CustomDropdownPopup(icon, options[i].options.ToArray(), currentIndex,onSelect));
+                    }
+                    else
+                    {
+                        onSelect?.Invoke(i);
+                        editorWindow.Close(); 
+                    }
                 }
                 
-                if (i < options.Length - 1) // Avoid drawing after the last item
+                if (isSelected && !isGroup)
+                {
+                    GUIContent checkmarkContent = EditorGUIUtility.IconContent("d_FilterSelectedOnly@2x"); 
+                    
+                    Rect lastRect = GUILayoutUtility.GetLastRect();
+                    float checkmarkSize = lineHeight; 
+                    Rect checkmarkRect = new Rect(lastRect.xMax - checkmarkSize, lastRect.y, checkmarkSize, checkmarkSize);
+                    GUI.Label(checkmarkRect, checkmarkContent);
+                }
+                if (i < options.Length - 1) 
                 {
                     Rect lastRect = GUILayoutUtility.GetLastRect();
-                    float lineHeight = 1; // Thickness of the line
+                    float lineHeight = 1;
                     Rect lineRect = new Rect(lastRect.x, lastRect.yMax, lastRect.width, lineHeight);
-                    EditorGUI.DrawRect(lineRect, new Color(1,1,1,0.1f)); // Draw a grey line
+                    EditorGUI.DrawRect(lineRect, new Color(1,1,1,0.1f));
                 }
             }
         }

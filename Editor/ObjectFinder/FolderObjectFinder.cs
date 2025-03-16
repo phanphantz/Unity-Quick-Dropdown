@@ -58,7 +58,7 @@ namespace PhEngine.QuickDropdown.Editor
         public override bool IsBelongToSource(object currentObject)
         {
             var path = AssetUtils.GetAssetPath(currentObject as Object);
-            return path != null && pathResults.Any(r => r.assetPath == path);
+            return path != null && pathResults != null && pathResults.Any(r => r.assetPath == path);
         }
 
         protected override Object SearchForSource()

@@ -19,12 +19,15 @@ namespace PhEngine.QuickDropdown.Editor
         GUIContent Label { get; set; }
         Type Type { get; set; }
         ObjectFinder Finder { get; set; }
-        
+
         bool IsUnityObject { get; set; }
         bool IsSourceValid { get; set; }
 
         string Path => Field.Path;
         float SingleLineHeight => EditorGUIUtility.singleLineHeight;
+        
+        GUIContent[] options;
+        string[] objectNames;
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
@@ -82,8 +85,7 @@ namespace PhEngine.QuickDropdown.Editor
             }
             else
             {
-                if (!TryDrawContent())
-                    return;
+                DrawContent();
             }
 
             if (!Field.IsHideInfo)
@@ -110,10 +112,9 @@ namespace PhEngine.QuickDropdown.Editor
             GUI.color = oldColor;
         }
 
-        bool TryDrawContent()
+        void DrawContent()
         {
-            var isShouldDrawCreateButton =
-                Type.IsSubclassOf(typeof(ScriptableObject)) && !Field.IsHideCreateSOButton;
+            var isShouldDrawCreateButton = Type.IsSubclassOf(typeof(ScriptableObject)) && !Field.IsHideCreateSOButton;
             var isShouldDrawInspectButton = !Field.IsHideInspectButton && IsUnityObject;
 
             var buttonWidth = 25f;
@@ -124,27 +125,48 @@ namespace PhEngine.QuickDropdown.Editor
                 allButtonWidth += buttonWidth;
 
             Rect remainingRect = EditorGUI.PrefixLabel(Position, Label);
-            if (GUI.Button(new Rect(remainingRect.x, Position.y, remainingRect.width - allButtonWidth, EditorGUIUtility.singleLineHeight),
-                   GetCurrentItemName(), EditorStyles.popup))
-            {
-                if (!DrawDropdown(remainingRect.x,remainingRect.width - allButtonWidth))
-                    return false;
-            }
+            remainingRect.width -= allButtonWidth;
+
+            var isFocused = remainingRect.Contains(Event.current.mousePosition);
+            if (isFocused || options == null)
+                PrepareSearchResults();
+
+            var oldColor = GUI.color;
+            var dimmedColor = oldColor;
+            dimmedColor.a = 0.8f;
+            GUI.color = isFocused ? oldColor : dimmedColor;
+            DrawDropdown(remainingRect);
+            GUI.color = oldColor;
 
             if (isShouldDrawInspectButton)
                 DrawInspectButton(allButtonWidth, buttonWidth);
 
             if (isShouldDrawCreateButton)
                 DrawCreateButton(allButtonWidth, buttonWidth);
+        }
 
-            return true;
+        void PrepareSearchResults()
+        {
+            Debug.Log("Building Options for Dropdown");
+            var results = Finder.SearchForItems();
+            objectNames = results
+                .Select(result => result.Split('/').LastOrDefault())
+                .ToArray();
+            
+            var baseOptions = new[] { GetNullItemContent() };
+            var icon = IconUtils.GetIconForType(Type);
+            options = baseOptions
+                .Concat(results.Select(s => new GUIContent(s, icon)))
+                .ToArray();
         }
 
         GUIContent GetCurrentItemName()
         {
-            return IsUnityObject ? 
-                (Property.objectReferenceValue ? 
-                    new GUIContent(Property.objectReferenceValue.name, IconUtils.GetIconForType(Type)) : GetNullItemContent()) : new GUIContent(Property.stringValue);
+            return IsUnityObject
+                ? (Property.objectReferenceValue
+                    ? new GUIContent(Property.objectReferenceValue.name, IconUtils.GetIconForType(Type))
+                    : GetNullItemContent())
+                : new GUIContent(Property.stringValue);
         }
 
         static GUIContent GetNullItemContent()
@@ -152,44 +174,27 @@ namespace PhEngine.QuickDropdown.Editor
             return new GUIContent("NULL", IconUtils.GetWarningIcon());
         }
 
-        bool DrawDropdown(float positionX, float width)
+        void DrawDropdown(Rect rect)
         {
-            var results = Finder.SearchForItems();
-            var objectNames = results
-                .Select(result => result.Split('/').LastOrDefault())
-                .ToArray();
-            
-            var currentIndex = FindCurrentIndex(objectNames);
-            var baseOptions = new[] { GetNullItemContent() };
-            var icon = IconUtils.GetIconForType(Type);
-            var options = baseOptions
-                .Concat(results.Select(s => new GUIContent(s, icon)))
-                .ToArray();
-            
-            //Draw the dropdown popup
-            PopupWindow.Show(
-                new Rect(positionX, Position.y + EditorGUIUtility.singleLineHeight, width, 0),
-                new CustomDropdownPopup(options, width, currentIndex,selectedIndex =>
+            var currentIndex = FindCurrentIndex();
+            var selectedIndex = EditorGUI.Popup(rect, currentIndex, options);
+            if (selectedIndex != currentIndex)
+            {
+                if (selectedIndex != 0)
                 {
-                    if (selectedIndex == currentIndex) 
-                        return;
-                    
-                    if (selectedIndex != 0)
-                    {
-                        var targetObject = Finder.GetResultAtIndex(selectedIndex - 1);
-                        ApplyChangeToProperty(targetObject);
-                    }
-                    else
-                    {
-                        ApplyChangeToProperty(null);
-                    }
-                }));
-            return true;
+                    var targetObject = Finder.GetResultAtIndex(selectedIndex - 1);
+                    ApplyChangeToProperty(targetObject);
+                }
+                else
+                {
+                    ApplyChangeToProperty(null);
+                }
+            }
         }
-
-        int FindCurrentIndex(string[] objectNames)
+        
+        int FindCurrentIndex()
         {
-            var currentIndex = -1;
+            var index = -1;
             Object currentObject = null;
             string rawAddress = "";
             if (IsUnityObject)
@@ -203,21 +208,21 @@ namespace PhEngine.QuickDropdown.Editor
 
             if (currentObject || !string.IsNullOrEmpty(rawAddress))
             {
-                currentIndex = Array.IndexOf(objectNames, IsUnityObject && currentObject ? currentObject.name : rawAddress);
-
+                index = Array.IndexOf(objectNames, IsUnityObject && currentObject ? currentObject.name : rawAddress);
                 //Recheck if the object reference really belong to source
-                if (currentIndex != -1 && !Finder.IsBelongToSource(IsUnityObject ? currentObject : rawAddress))
-                    currentIndex = -1;
+                if (index != -1 && !Finder.IsBelongToSource(IsUnityObject ? currentObject : rawAddress))
+                    index = -1;
             }
 
             //Index 0 is NULL option
-            currentIndex++;
-            if (currentIndex == 0 && currentObject)
+            index++;
+            if (index == 0 && currentObject)
             {
                 Debug.LogWarning($"The Object '{currentObject.name}' does not belong to path: {Path}");
                 return -1;
             }
-            return currentIndex;
+
+            return index;
         }
 
         void ApplyChangeToProperty(Object targetObject)
@@ -228,7 +233,7 @@ namespace PhEngine.QuickDropdown.Editor
                 Property.stringValue = targetObject ? targetObject.name : string.Empty;
             Property.serializedObject.ApplyModifiedProperties();
         }
-        
+
         void DrawCreateButton(float allButtonWidth, float buttonWidth)
         {
             var createButtonRect = new Rect(
@@ -257,7 +262,10 @@ namespace PhEngine.QuickDropdown.Editor
             var oldColor = GUI.color;
 
             GUI.color = IsSourceValid ? LinkColor : Color.yellow;
-            if (GUI.Button(buttonRect, new GUIContent(Path, IsSourceValid ? "Click to search for the source again" : "Click to Jump to the source"), EditorStyles.miniLabel))
+            if (GUI.Button(buttonRect,
+                    new GUIContent(Path,
+                        IsSourceValid ? "Click to search for the source again" : "Click to Jump to the source"),
+                    EditorStyles.miniLabel))
             {
                 if (IsSourceValid)
                     Finder.SelectAndPingSource();
@@ -270,7 +278,9 @@ namespace PhEngine.QuickDropdown.Editor
                 buttonRect.x += buttonRect.width;
                 buttonRect.width = 30f;
                 GUI.color = oldColor;
-                if (GUI.Button(buttonRect, new GUIContent("Fix", "Search for a source with the specified name or Create it if not found."), EditorStyles.miniButton))
+                if (GUI.Button(buttonRect,
+                        new GUIContent("Fix", "Search for a source with the specified name or Create it if not found."),
+                        EditorStyles.miniButton))
                     Finder.CreateOrGetSourceFromInspector();
             }
 
@@ -295,6 +305,7 @@ namespace PhEngine.QuickDropdown.Editor
                         throw new ArgumentOutOfRangeException();
                 }
             }
+
             EditorGUI.EndDisabledGroup();
         }
     }
