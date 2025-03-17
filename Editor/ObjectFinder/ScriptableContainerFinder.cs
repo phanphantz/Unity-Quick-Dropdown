@@ -35,7 +35,7 @@ namespace PhEngine.QuickDropdown.Editor
             if (Container == null)
                 PrepareSource();
             var groupPath = AssetUtils.GetAssetPath(Container);
-            var newInstance = AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
+            var newInstance = AssetUtils.CreateScriptableObjectAndOpen(Field.DefaultNewItemName, Type, Path.GetDirectoryName(groupPath));
             Undo.RegisterCompleteObjectUndo(Container, "Create new ScriptableObject");
             Container.AddObject(newInstance);
             EditorUtility.SetDirty(Container);

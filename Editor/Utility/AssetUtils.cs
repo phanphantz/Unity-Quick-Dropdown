@@ -29,14 +29,13 @@ namespace PhEngine.QuickDropdown.Editor
             EditorGUIUtility.PingObject(obj);
         }
 
-        public static ScriptableObject CreateScriptableObjectAndSelect(string name, Type type, string folderPath,
-            bool isSelectAndPing = true)
+        public static ScriptableObject CreateScriptableObjectAndOpen(string name, Type type, string folderPath)
         {
             name = string.IsNullOrEmpty(name) ? type.Name : name;
             var assetPath = GetUniqueAssetFilePath(name, folderPath);
             var loadedInstance = CreateScriptableObject(type, assetPath);
-            if (isSelectAndPing)
-                SelectAndPingInProjectTab(loadedInstance);
+            EditorGUIUtility.PingObject(loadedInstance);
+            EditorUtility.OpenPropertyEditor(loadedInstance);
             return loadedInstance;
         }
 

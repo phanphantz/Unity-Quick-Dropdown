@@ -57,7 +57,7 @@ namespace PhEngine.QuickDropdown.Editor
             if (CachedSource == null)
                 PrepareSource();
             
-            AssetUtils.CreateScriptableObjectAndSelect(Field.DefaultNewItemName, Type, AssetPath);
+            AssetUtils.CreateScriptableObjectAndOpen(Field.DefaultNewItemName, Type, AssetPath);
         }
 
         public override Texture GetSourceIcon()
