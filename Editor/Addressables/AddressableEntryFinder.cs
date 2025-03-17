@@ -76,7 +76,7 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
             if (targetObject == null)
                 return false;
             
-            return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(targetObject, out var guid, out _) 
+            return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(targetObject, out var guid, out long _) 
                    && Group.entries.Any(e => e.guid == guid);
         }
 
