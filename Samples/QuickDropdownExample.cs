@@ -22,7 +22,7 @@ public class QuickDropdownExample : MonoBehaviour
     //Let user pick Sprite from the folder 'Assets/Sprites' and all the subfolders below.
     //The folder information is hidden from 'isHideInfo' flag
     //These path variations also work: 'Assets/Sprites', 'Assets/Sprites/', 'Sprites/'
-    [FromFolder("Sprites"), SerializeField]
+    [FromFolder("Sprites", isHideInfo: true), SerializeField]
     Sprite sprite;
     
     //By default, Inspect button will open the assigned asset as a floating window.
