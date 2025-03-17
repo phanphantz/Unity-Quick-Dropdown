@@ -12,10 +12,10 @@ C# Attributes that allow you to quickly assign Unity assets from a Dropdown on t
 - **[FromFolder]** - Display a Dropdown of Unity Assets from a specific **Folder**.
 - **[FromGroup]** - Display a Dropdown of Unity Assets from the `ScriptableGroup` with a matching name.
   - Using `ScriptableGroups` allows you to move the assets in the project around without losing their group organization.
-  - Cyclic references are prevented and filtered out.
+  - You can nest ScriptableGroup inside each other. Cyclic references are also prevented and filtered out.
 - **[FromConfig]** - Display a Dropdown of Unity Assets from a first found `ScriptableContainer` with a specified type.
   - This is useful for looking up objects from a ScriptableObject that is meant to be a singular "Config" or "Setting" (a Singleton if you will)
-- **[FromAddressable]** - Display a Dropdown of Addressable asset from a specific Addressable Group.
+- **[FromAddressable]** - Display a Dropdown of Addressable Assets from a specific Addressable Group.
 - Supported dropdown display for nested elements inside **List & Array**. (Direct usages on List & Array are not supported though)
 - **QoL Features**:
   - Select & Jump to the assigned asset or its enclosing location.
