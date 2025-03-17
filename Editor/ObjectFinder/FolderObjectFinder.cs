@@ -38,7 +38,7 @@ namespace PhEngine.QuickDropdown.Editor
             }).ToArray();
         }
 
-        public override Object GetResultAtIndex(int index)
+        public override object GetResultAtIndex(int index)
         {
             return AssetUtils.LoadAssetAtPath(pathResults[index].assetPath, Type);
         }

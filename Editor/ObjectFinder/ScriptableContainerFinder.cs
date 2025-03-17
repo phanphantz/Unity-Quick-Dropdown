@@ -18,7 +18,7 @@ namespace PhEngine.QuickDropdown.Editor
             return Container ? Container.GetStringOptions(Type) : new string[] { };
         }
         
-        public override Object GetResultAtIndex(int index)
+        public override object GetResultAtIndex(int index)
         {
             return Container.GetObjectFromFlatTree(Type, index);
         }

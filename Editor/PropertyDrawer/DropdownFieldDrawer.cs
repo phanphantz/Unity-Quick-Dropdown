@@ -231,7 +231,7 @@ namespace PhEngine.QuickDropdown.Editor
 
             if (currentObject || !string.IsNullOrEmpty(rawAddress))
             {
-                index = Array.IndexOf(objectNames, IsUnityObject && currentObject ? currentObject.name : rawAddress);
+                index = Array.IndexOf(objectNames, IsUnityObject && currentObject ? Finder.GetIdentityName(currentObject) : rawAddress);
             }
 
             //Index 0 is NULL option
@@ -239,12 +239,12 @@ namespace PhEngine.QuickDropdown.Editor
             return index;
         }
 
-        void ApplyChangeToProperty(Object targetObject)
+        void ApplyChangeToProperty(object targetObject)
         {
             if (IsUnityObject)
-                Property.objectReferenceValue = targetObject;
+                Property.objectReferenceValue = targetObject as Object;
             else if (Type == typeof(string))
-                Property.stringValue = targetObject ? targetObject.name : string.Empty;
+                Property.stringValue = targetObject as string;
             Property.serializedObject.ApplyModifiedProperties();
         }
 

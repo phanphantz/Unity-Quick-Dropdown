@@ -24,12 +24,17 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
 
         public override string[] SearchForItems()
         {
-            return Group.entries.Select(e => e.address).ToArray();
+            return FieldUtils.IsTypeOrCollectionOfType<string>(Type) ?
+                Group.entries.Select(e => e.address).ToArray() : 
+                Group.entries.Select(e => e.MainAsset.name).ToArray();
         }
 
-        public override Object GetResultAtIndex(int index)
+        public override object GetResultAtIndex(int index)
         {
             var entry = Group.entries.ElementAt(index);
+            if (FieldUtils.IsTypeOrCollectionOfType<string>(Type))
+                return entry.address;
+            
             var path = AssetDatabase.GUIDToAssetPath(entry.guid);
             return AssetDatabase.LoadAssetAtPath<Object>(path);
         }

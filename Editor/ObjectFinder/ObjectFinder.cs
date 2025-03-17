@@ -28,7 +28,7 @@ namespace PhEngine.QuickDropdown.Editor
         }
 
         public abstract string[] SearchForItems();
-        public abstract Object GetResultAtIndex(int index);
+        public abstract object GetResultAtIndex(int index);
         public abstract void SelectAndPingSource();
         public abstract void CreateNewScriptableObject();
         public abstract Texture GetSourceIcon();
@@ -87,5 +87,9 @@ namespace PhEngine.QuickDropdown.Editor
         }
 
         protected abstract Object CreateNewSource();
+        public virtual string GetIdentityName(Object currentObject)
+        {
+            return currentObject.name;
+        }
     }
 }
