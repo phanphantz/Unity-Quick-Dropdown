@@ -14,12 +14,16 @@ namespace PhEngine.QuickDropdown.Editor
         
         public FolderObjectFinder(DropdownField field, Type type) : base(field, type)
         {
-            AssetPath = ObjectPath.StartsWith("Assets/") ? ObjectPath : "Assets/" + ObjectPath;
+            var assetPath = ObjectPath.StartsWith("Assets/") ? ObjectPath : "Assets/" + ObjectPath;
+            if (assetPath.EndsWith('/'))
+                assetPath = assetPath.Substring(0, assetPath.Length - 1);
+
+            AssetPath = assetPath;
         }
         
         protected override bool IsPathMatched()
         {
-            return CachedSource.name == ObjectPath.Split('/').LastOrDefault();
+            return CachedSource.name == AssetPath.Split('/').LastOrDefault();
         }
 
         public override string[] SearchForItems()
