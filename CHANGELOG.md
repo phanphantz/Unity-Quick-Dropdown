@@ -1,5 +1,10 @@
 This is the history log file for the Unity Quick Dropdown package.
 
+# 0.2.1
+
+**Fixed Bugs**
+- Fixed Ambiguous function call error on Unity 2022 with Addressables package.
+
 # 0.2.0
 
 **New Features**
