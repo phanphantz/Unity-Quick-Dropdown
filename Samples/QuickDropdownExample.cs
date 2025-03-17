@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using PhEngine.QuickDropdown;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class QuickDropdownExample : MonoBehaviour
 {
@@ -21,7 +22,7 @@ public class QuickDropdownExample : MonoBehaviour
 
     //Let user pick Sprite from the folder 'Assets/Sprites' and all the subfolders below.
     //The folder information is hidden from 'isHideInfo' flag
-    [FromFolder("Sprites", isHideInfo: true), SerializeField]
+    [FromFolder("Assets/TestFolder/Sprites/"), SerializeField]
     Sprite sprite;
     
     //By default, Inspect button will open the assigned asset as a floating window.
@@ -29,13 +30,16 @@ public class QuickDropdownExample : MonoBehaviour
     [FromFolder("Prefabs", inspectMode: InspectMode.Select), SerializeField]
     GameObject prefab;
     
-    //This will NOT work. DropdownFields does not directly support List and Array.
+    //Quick Dropdown now directly supports List & Array
     [FromGroup("TestGroup"), SerializeField]
-    List<ElementConfig> notWorkingList = new List<ElementConfig>();
+    List<ElementConfig> directList = new List<ElementConfig>();
     
-    //A Correct way to draw dropdown for List and Array.
-    [SerializeField] List<ElementConfigData> workingDropdownList = new List<ElementConfigData>();
-    [SerializeField] ElementConfigData[] workingDropdownArray = new ElementConfigData[] {};
+    [FromGroup("TestGroup"), SerializeField]
+    ElementConfig[] directArray = new ElementConfig[] {};
+    
+    //Nested List & Array also works
+    [SerializeField] List<ElementConfigData> nestedDropdownList = new List<ElementConfigData>();
+    [SerializeField] ElementConfigData[] nestedDropdownArray = new ElementConfigData[] {};
     
     [Serializable]
     public class ElementConfigData

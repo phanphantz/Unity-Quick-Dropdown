@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -23,9 +24,9 @@ namespace PhEngine.QuickDropdown.Editor
 
         public virtual bool IsTypeSupported(Type type)
         {
-            return type.IsSubclassOf(typeof(Object));
+            return FieldUtils.IsTypeOrCollectionOfType<Object>(type);
         }
-        
+
         public abstract string[] SearchForItems();
         public abstract Object GetResultAtIndex(int index);
         public abstract void SelectAndPingSource();

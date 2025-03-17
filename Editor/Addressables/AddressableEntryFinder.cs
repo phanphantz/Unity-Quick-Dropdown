@@ -19,7 +19,7 @@ namespace PhEngine.QuickDropdown.Editor.Addressables
 
         public override bool IsTypeSupported(Type type)
         {
-            return base.IsTypeSupported(type) || type == typeof(string);
+            return base.IsTypeSupported(type) || FieldUtils.IsTypeOrCollectionOfType<string>(type);
         }
 
         public override string[] SearchForItems()

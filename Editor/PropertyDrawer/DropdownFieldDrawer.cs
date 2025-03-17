@@ -44,18 +44,17 @@ namespace PhEngine.QuickDropdown.Editor
             DetailRect = new Rect(Position.x, Position.y + SingleLineHeight, Position.width, SingleLineHeight);
 
             //Get Type information
-            Type = FieldUtils.GetFieldType(property);
+            Type = FieldUtils.GetFlatFieldType(property);
             if (Type == null)
             {
                 DrawDefaultField();
                 return;
             }
 
+            IsUnityObject = Type.IsSubclassOf(typeof(Object));
             if (Type.IsSubclassOf(typeof(MonoBehaviour)))
                 Type = typeof(GameObject);
-
-            IsUnityObject = Type.IsSubclassOf(typeof(Object));
-
+        
             //Get DropdownField
             Field = (DropdownField)attribute;
             if (Field == null)

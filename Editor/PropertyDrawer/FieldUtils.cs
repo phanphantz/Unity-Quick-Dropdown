@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 
@@ -6,11 +7,41 @@ namespace PhEngine.QuickDropdown.Editor
 {
     public static class FieldUtils
     {
-        public static Type GetFieldType(SerializedProperty property)
+        public static Type GetFlatFieldType(SerializedProperty property)
         {
             var targetObject = property.serializedObject.targetObject;
             var targetType = targetObject.GetType();
-            return GetFieldViaPath(targetType, property.propertyPath)?.FieldType;
+            return ToFlatType(GetFieldViaPath(targetType, property.propertyPath)?.FieldType);
+        }
+
+        public static bool IsTypeOrCollectionOfType<T>(Type type)
+        {
+            return type == typeof(T) || type.IsSubclassOf(typeof(T)) || IsArrayOrListOf<T>(type);
+        }
+
+        static Type ToFlatType(Type type)
+        {
+            if (type.IsArray)
+                return type.GetElementType();
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+                return type.GetGenericArguments()[0];
+
+            return type;
+        }
+        
+        static bool IsArrayOrListOf<T>(Type type)
+        {
+            if (type.IsArray && type.GetElementType()!.IsSubclassOf(typeof(T)))
+                return true;
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var elementType = type.GetGenericArguments()[0];
+                return elementType.IsSubclassOf(typeof(T));
+            }
+
+            return false;
         }
 
         /// <summary>
