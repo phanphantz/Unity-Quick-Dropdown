@@ -138,6 +138,8 @@ namespace PhEngine.QuickDropdown.Editor
             var dimmedColor = oldColor;
             dimmedColor.a = 0.8f;
             GUI.color = isFocused ? oldColor : dimmedColor;
+
+            remainingRect.height = SingleLineHeight;
             if (!TryDrawDropdown(remainingRect))
             {
                 GUI.color = oldColor;
