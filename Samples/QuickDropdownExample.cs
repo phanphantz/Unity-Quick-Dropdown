@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using PhEngine.QuickDropdown;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class QuickDropdownExample : MonoBehaviour
 {
@@ -22,7 +21,8 @@ public class QuickDropdownExample : MonoBehaviour
 
     //Let user pick Sprite from the folder 'Assets/Sprites' and all the subfolders below.
     //The folder information is hidden from 'isHideInfo' flag
-    [FromFolder("Assets/TestFolder/Sprites/"), SerializeField]
+    //These path variations also work: 'Assets/Sprites', 'Assets/Sprites/', 'Sprites/'
+    [FromFolder("Sprites"), SerializeField]
     Sprite sprite;
     
     //By default, Inspect button will open the assigned asset as a floating window.
