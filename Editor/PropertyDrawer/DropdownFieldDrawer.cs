@@ -130,7 +130,6 @@ namespace PhEngine.QuickDropdown.Editor
 
             Rect remainingRect = EditorGUI.PrefixLabel(Position, Label);
             remainingRect.width -= allButtonWidth;
-
             var isFocused = remainingRect.Contains(Event.current.mousePosition);
             if (isFocused || options == null)
                 PrepareSearchResults();
@@ -271,15 +270,13 @@ namespace PhEngine.QuickDropdown.Editor
             var image = Finder.GetSourceIcon();
 
             Rect iconRect = new Rect(DetailRect.x + 10, DetailRect.y + 3, 12, 12);
-            Rect buttonRect = new Rect(DetailRect.x + 30, DetailRect.y, Path.Length * 6f, DetailRect.height);
+            var pathContent = new GUIContent(Path, IsSourceValid ? "Click to search for the source again" : "Click to Jump to the source");
+            var pathWidth = EditorStyles.miniLabel.CalcSize(pathContent).x;
+            Rect buttonRect = new Rect(DetailRect.x + 30, DetailRect.y, pathWidth, DetailRect.height);
             GUI.DrawTexture(iconRect, image, ScaleMode.ScaleToFit);
             var oldColor = GUI.color;
-
             GUI.color = IsSourceValid ? LinkColor : Color.yellow;
-            if (GUI.Button(buttonRect,
-                    new GUIContent(Path,
-                        IsSourceValid ? "Click to search for the source again" : "Click to Jump to the source"),
-                    EditorStyles.miniLabel))
+            if (GUI.Button(buttonRect, pathContent, EditorStyles.miniLabel))
             {
                 if (IsSourceValid)
                     Finder.SelectAndPingSource();
@@ -292,9 +289,7 @@ namespace PhEngine.QuickDropdown.Editor
                 buttonRect.x += buttonRect.width;
                 buttonRect.width = 30f;
                 GUI.color = oldColor;
-                if (GUI.Button(buttonRect,
-                        new GUIContent("Fix", "Search for a source with the specified name or Create it if not found."),
-                        EditorStyles.miniButton))
+                if (GUI.Button(buttonRect, new GUIContent("Fix", "Search for a source with the specified name or Create it if not found."), EditorStyles.miniButton))
                     Finder.CreateOrGetSourceFromInspector();
             }
 
