@@ -1,5 +1,11 @@
 This is the history log file for the Unity Quick Dropdown package.
 
+# 0.2.3
+
+**Fixed Bugs**
+- Fixed FromAddressable cannot find asset if the object name does not match the address.
+- Fixed wrong parameter in the example script.
+
 # 0.2.2
 
 **New Features**
