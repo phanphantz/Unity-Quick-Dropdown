@@ -1,5 +1,17 @@
 This is the history log file for the Unity Quick Dropdown package.
 
+# 0.2.2
+
+**New Features**
+- Directly supported List & Array
+
+**Improvements**
+- UX Change: Creating new ScriptableObject from a '+' button will open it as floating window instead of jumping to it.
+
+**Fixed Bugs**
+- Fixed bug where FromFolder attribute will not find the folder if the path ends with '/'
+- Fix button and dropdown positioning calculation.
+
 # 0.2.1
 
 **Fixed Bugs**

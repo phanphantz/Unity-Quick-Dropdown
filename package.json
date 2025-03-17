@@ -1,7 +1,7 @@
 {
   "name": "com.phengine.quickdropdown",
   "displayName": "Unity Quick Dropdown",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "C# Attributes that allow you to quickly assign Unity assets from a Dropdown on the Inspector.",
   "keywords": [],
   "repository": {

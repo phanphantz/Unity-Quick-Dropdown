@@ -16,7 +16,7 @@ C# Attributes that allow you to quickly assign Unity assets from a Dropdown on t
 - **[FromConfig]** - Display a Dropdown of Unity Assets from a first found `ScriptableContainer` with a specified type.
   - This is useful for looking up objects from a ScriptableObject that is meant to be a singular "Config" or "Setting" (a Singleton if you will)
 - **[FromAddressable]** - Display a Dropdown of Addressable Assets from a specific Addressable Group.
-- Supported dropdown display for nested elements inside **List & Array**. (Direct usages on List & Array are not supported though)
+- Supported **List & Array** (Both direct usage & nested elements)
 - **QoL Features**:
   - Select & Jump to the assigned asset or its enclosing location.
   - You get a **Fix** button for creating a new source if it does not exist.
@@ -60,6 +60,7 @@ public class QuickDropdownExample : MonoBehaviour
 
     //Let user pick Sprite from the folder 'Assets/Sprites' and all the subfolders below.
     //The folder information is hidden from 'isHideInfo' flag
+    //These path variations also work: 'Assets/Sprites', 'Assets/Sprites/', 'Sprites/'
     [FromFolder("Sprites", isHideInfo: true), SerializeField]
     Sprite sprite;
     
@@ -73,23 +74,17 @@ public class QuickDropdownExample : MonoBehaviour
 <img src=https://github.com/phanphantz/GameDevSecretSauce/blob/main/Assets/QuickDropdown/QuickDropdownExample_1.jpeg width=80%>
 
 # List & Array Support
-Although direct usages on List & Array are not directly supported, there is a workaround...
-
 ```csharp
-//This will NOT work. DropdownFields does not directly support List and Array.
+//Quick Dropdown now directly supports List & Array
 [FromGroup("TestGroup"), SerializeField]
-List<ElementConfig> notWorkingList = new List<ElementConfig>();
-
-//A Correct way to draw dropdown for List and Array.
-[SerializeField] List<ElementConfigData> workingDropdownList = new List<ElementConfigData>();
-[SerializeField] ElementConfigData[] workingDropdownArray = new ElementConfigData[] {};
+List<ElementConfig> directList = new List<ElementConfig>();
     
-[Serializable]
-public class ElementConfigData
-{
-    [FromGroup("TestGroup", isHideInfo: true)]
-    public ElementConfig config;
-}
+[FromGroup("TestGroup"), SerializeField]
+ElementConfig[] directArray = new ElementConfig[] {};
+    
+//Nested List & Array also works
+[SerializeField] List<ElementConfigData> nestedDropdownList = new List<ElementConfigData>();
+[SerializeField] ElementConfigData[] nestedDropdownArray = new ElementConfigData[] {};
 ```
 
 # Addressables Support
